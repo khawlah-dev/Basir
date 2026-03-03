@@ -1,0 +1,37 @@
+{% extends "ui/base.html" %}
+{% block title %}الدرجات الموضوعية{% endblock %}
+{% block content %}
+<h2 class="mb-3">الدرجات الموضوعية</h2>
+<div class="alert alert-warning py-2">
+  الدرجة الموضوعية في هذه النسخة جزئية وتعتمد فقط على ساعات التطوير المهني وعدد التحضيرات.
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-sm align-middle">
+        <thead><tr><th>المعلم</th><th>الدورة</th><th>الدرجة الكلية</th><th>نسخة السياسة</th><th>تاريخ الاحتساب</th><th></th></tr></thead>
+        <tbody>
+        {% for row in scores %}
+          <tr>
+            <td>{{ row.teacher }}</td>
+            <td>{{ row.cycle.name }}</td>
+            <td><strong>{{ row.objective_total }}</strong></td>
+            <td>{{ row.policy_version }}</td>
+            <td>{{ row.computed_at }}</td>
+            <td>
+              <form method="post" action="{% url 'ui:objective-recompute' row.teacher_id row.cycle_id %}">
+                {% csrf_token %}
+                <button class="btn btn-outline-secondary btn-sm" type="submit">إعادة الاحتساب</button>
+              </form>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="text-muted">لا توجد درجات موضوعية متاحة.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

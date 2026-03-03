@@ -1,0 +1,29 @@
+{% extends "ui/base.html" %}
+{% block title %}التنبيهات{% endblock %}
+{% block content %}
+<h2 class="mb-3">التنبيهات</h2>
+<div class="card">
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-sm align-middle">
+        <thead><tr><th>المعلم</th><th>الدورة</th><th>الحدة</th><th>الرمز</th><th>الرسالة</th><th>الحالة</th><th>التاريخ</th></tr></thead>
+        <tbody>
+        {% for f in flags %}
+          <tr>
+            <td>{{ f.teacher }}</td>
+            <td>{{ f.cycle.name }}</td>
+            <td>{{ f.severity }}</td>
+            <td>{{ f.code }}</td>
+            <td>{{ f.message }}</td>
+            <td>{% if f.case_id %}#{{ f.case_id }}{% else %}-{% endif %}</td>
+            <td>{{ f.created_at }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7" class="text-muted">لا توجد تنبيهات حتى الآن.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

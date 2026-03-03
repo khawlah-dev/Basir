@@ -1,0 +1,32 @@
+{% extends "ui/base.html" %}
+{% block title %}لوحة التحكم{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2>لوحة التحكم</h2>
+  <span class="badge text-bg-secondary">الدور: {{ request.user.role }}</span>
+</div>
+
+<div class="alert alert-warning">
+  <strong>نطاق الدرجة الموضوعية:</strong>
+  هذه درجة موضوعية جزئية محسوبة فقط من <code>pd_hours</code> و <code>plans_count</code>.
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4"><div class="card"><div class="card-body"><h6>سجلات المؤشرات</h6><h3>{{ metrics_count }}</h3></div></div></div>
+  <div class="col-md-4"><div class="card"><div class="card-body"><h6>الدرجات الموضوعية</h6><h3>{{ objectives_count }}</h3></div></div></div>
+  <div class="col-md-4"><div class="card"><div class="card-body"><h6>تقييمات المدير</h6><h3>{{ evaluations_count }}</h3></div></div></div>
+  <div class="col-md-6"><div class="card"><div class="card-body"><h6>المقارنات</h6><h3>{{ comparisons_count }}</h3></div></div></div>
+  <div class="col-md-6"><div class="card"><div class="card-body"><h6>الحالات المفتوحة</h6><h3>{{ open_cases_count }}</h3></div></div></div>
+</div>
+
+<div class="d-flex gap-2 flex-wrap">
+  <a class="btn btn-outline-primary" href="{% url 'ui:metrics' %}">إدارة المؤشرات</a>
+  <a class="btn btn-outline-primary" href="{% url 'ui:objective-scores' %}">عرض الدرجات الموضوعية</a>
+  <a class="btn btn-outline-primary" href="{% url 'ui:comparisons' %}">عرض المقارنات</a>
+  {% if request.user.role == 'LEADER' or request.user.role == 'ADMIN' %}
+    <a class="btn btn-primary" href="{% url 'ui:evaluations' %}">إدارة التقييمات</a>
+    <a class="btn btn-outline-danger" href="{% url 'ui:flags' %}">التنبيهات</a>
+    <a class="btn btn-outline-danger" href="{% url 'ui:cases' %}">الحالات</a>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "ui/base.html" %}
+{% block title %}المقارنات{% endblock %}
+{% block content %}
+<h2 class="mb-3">مقارنة درجة المدير مع الدرجة الموضوعية الجزئية</h2>
+<div class="card">
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-sm align-middle">
+        <thead><tr><th>المعلم</th><th>الدورة</th><th>درجة المدير</th><th>الدرجة الموضوعية (جزئية)</th><th>الانحراف</th><th>التصنيف</th><th>آخر تحديث</th></tr></thead>
+        <tbody>
+        {% for c in comparisons %}
+          <tr>
+            <td>{{ c.teacher }}</td>
+            <td>{{ c.cycle.name }}</td>
+            <td>{{ c.manager_total }}</td>
+            <td>{{ c.objective_total }}</td>
+            <td>{{ c.deviation }}</td>
+            <td>
+              {% if c.deviation_level == 'HIGH_RISK' %}
+                <span class="badge text-bg-danger">مخاطرة عالية</span>
+              {% elif c.deviation_level == 'REVIEW' %}
+                <span class="badge text-bg-warning">مراجعة</span>
+              {% else %}
+                <span class="badge text-bg-success">طبيعي</span>
+              {% endif %}
+            </td>
+            <td>{{ c.created_at }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7" class="text-muted">لا توجد نتائج مقارنة.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

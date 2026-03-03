@@ -1,0 +1,35 @@
+{% extends "ui/base.html" %}
+{% block title %}حالات المراجعة{% endblock %}
+{% block content %}
+<h2 class="mb-3">حالات المراجعة</h2>
+<div class="card">
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-sm align-middle">
+        <thead><tr><th>رقم الحالة</th><th>المعلم</th><th>الدورة</th><th>الحالة</th><th>فتح بواسطة</th><th>تاريخ الفتح</th><th>الإجراء</th></tr></thead>
+        <tbody>
+        {% for c in cases %}
+          <tr>
+            <td>{{ c.id }}</td>
+            <td>{{ c.teacher }}</td>
+            <td>{{ c.cycle.name }}</td>
+            <td>{{ c.status }}</td>
+            <td>{{ c.opened_by.username }}</td>
+            <td>{{ c.opened_at }}</td>
+            <td>
+              {% if c.status != 'CLOSED' %}
+                <a class="btn btn-outline-danger btn-sm" href="{% url 'ui:case-close' c.id %}">إغلاق</a>
+              {% else %}
+                <span class="text-muted">مغلقة</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7" class="text-muted">لا توجد حالات.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+from django.db import models
+
+
+class TeacherMetricSnapshot(models.Model):
+    teacher = models.ForeignKey("teachers.Teacher", on_delete=models.CASCADE, related_name="metric_snapshots")
+    cycle = models.ForeignKey("cycles.EvaluationCycle", on_delete=models.CASCADE, related_name="metric_snapshots")
+    pd_hours = models.DecimalField(max_digits=7, decimal_places=2)
+    plans_count = models.PositiveIntegerField()
+    created_by = models.ForeignKey("accounts.User", null=True, on_delete=models.SET_NULL, related_name="metric_snapshots_created")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["teacher", "cycle"], name="uq_metric_teacher_cycle"),
+            models.CheckConstraint(check=models.Q(pd_hours__gte=0), name="ck_pd_hours_non_negative"),
+            models.CheckConstraint(check=models.Q(plans_count__gte=0), name="ck_plans_count_non_negative"),
+        ]
+        indexes = [
+            models.Index(fields=["teacher", "cycle"]),
+            models.Index(fields=["cycle", "created_at"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"Metrics({self.teacher_id}, {self.cycle_id})"

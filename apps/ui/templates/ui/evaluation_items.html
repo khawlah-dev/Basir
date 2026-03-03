@@ -1,0 +1,25 @@
+{% extends "ui/base.html" %}
+{% block title %}درجات المعايير{% endblock %}
+{% block content %}
+<h2 class="mb-3">إدخال درجات المعايير</h2>
+<p class="text-muted">المعلم: <strong>{{ evaluation.teacher }}</strong> | الدورة: <strong>{{ evaluation.cycle.name }}</strong></p>
+
+<div class="card">
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="mb-3">
+          <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}<div class="text-danger small">{{ field.errors|striptags }}</div>{% endif %}
+        </div>
+      {% endfor %}
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary" type="submit">حفظ الدرجات</button>
+        <a class="btn btn-outline-secondary" href="{% url 'ui:evaluations' %}">رجوع</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

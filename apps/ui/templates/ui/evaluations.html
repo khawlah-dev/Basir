@@ -1,0 +1,54 @@
+{% extends "ui/base.html" %}
+{% block title %}تقييمات المدير{% endblock %}
+{% block content %}
+<h2 class="mb-3">تقييمات المدير</h2>
+
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-body">
+        <h5>إنشاء تقييم جديد</h5>
+        <form method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button class="btn btn-primary" type="submit">إنشاء</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead><tr><th>المعلم</th><th>الدورة</th><th>الحالة</th><th>درجة المدير</th><th>الإجراءات</th></tr></thead>
+            <tbody>
+            {% for e in evaluations %}
+              <tr>
+                <td>{{ e.teacher }}</td>
+                <td>{{ e.cycle.name }}</td>
+                <td>{{ e.status }}</td>
+                <td>{% if e.summary %}{{ e.summary.manager_total_score }}{% else %}-{% endif %}</td>
+                <td class="d-flex gap-2">
+                  {% if e.status == 'DRAFT' %}
+                    <a class="btn btn-outline-primary btn-sm" href="{% url 'ui:evaluation-items' e.id %}">تعديل المعايير</a>
+                    <form method="post" action="{% url 'ui:evaluation-finalize' e.id %}">
+                      {% csrf_token %}
+                      <button class="btn btn-success btn-sm" type="submit">اعتماد</button>
+                    </form>
+                  {% else %}
+                    <span class="text-muted">معتمد</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="5" class="text-muted">لا توجد تقييمات حتى الآن.</td></tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
