@@ -39,9 +39,6 @@ The objective score in this MVP is intentionally **partial**. It does not measur
 3. Run migrations.
 4. Seed criteria:
    - `python manage.py seed_criteria`
-5. (Optional) Seed full demo fixtures:
-   - `python manage.py seed_demo_data`
-   - Default demo password: `Demo@12345`
 
 ## API Base
 - `/api/v1/auth/token/`
@@ -60,13 +57,3 @@ The objective score in this MVP is intentionally **partial**. It does not measur
 - `/evaluations/` create/edit/finalize manager evaluations (leader/admin)
 - `/comparisons/` manager vs objective comparison results
 - `/flags/` and `/cases/` review workflow (leader/admin)
-
-## Demo Users
-After running `seed_demo_data`, these users are available:
-- `demo_admin`
-- `demo_leader_north`
-- `demo_leader_south`
-- `demo_teacher_n1`
-- `demo_teacher_n2`
-- `demo_teacher_s1`
-- `demo_teacher_s2`
