@@ -1,3 +1,6 @@
+import os
+
+from django.core.validators import FileExtensionValidator
 from django.db import models
 
 
@@ -45,3 +48,66 @@ class ScoreSummary(models.Model):
                 name="ck_manager_total_0_100",
             ),
         ]
+
+
+class TeacherEvidence(models.Model):
+    teacher = models.ForeignKey("teachers.Teacher", on_delete=models.CASCADE, related_name="evidences")
+    cycle = models.ForeignKey("cycles.EvaluationCycle", on_delete=models.CASCADE, related_name="evidences")
+    criterion = models.ForeignKey("criteria.EvaluationCriterion", on_delete=models.PROTECT, related_name="evidences")
+    evidence_text = models.TextField()
+    evidence_url = models.URLField(blank=True, default="")
+    submitted_by = models.ForeignKey("accounts.User", on_delete=models.PROTECT, related_name="submitted_evidences")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(check=~models.Q(evidence_text=""), name="ck_evidence_text_not_empty"),
+        ]
+        indexes = [
+            models.Index(fields=["teacher", "cycle", "created_at"]),
+            models.Index(fields=["criterion", "created_at"]),
+        ]
+
+
+class EvidenceAttachment(models.Model):
+    evidence = models.ForeignKey(TeacherEvidence, on_delete=models.CASCADE, related_name="attachments")
+    file = models.FileField(
+        upload_to="evidences/%Y/%m/%d/",
+        validators=[
+            FileExtensionValidator(
+                allowed_extensions=[
+                    "jpg",
+                    "jpeg",
+                    "png",
+                    "gif",
+                    "webp",
+                    "pdf",
+                    "doc",
+                    "docx",
+                    "xls",
+                    "xlsx",
+                    "ppt",
+                    "pptx",
+                    "txt",
+                    "mp4",
+                    "mov",
+                    "avi",
+                    "mkv",
+                    "webm",
+                    "m4v",
+                ]
+            )
+        ],
+    )
+    uploaded_by = models.ForeignKey("accounts.User", on_delete=models.PROTECT, related_name="evidence_attachments")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["evidence", "uploaded_at"]),
+        ]
+
+    @property
+    def filename(self) -> str:
+        return os.path.basename(self.file.name)

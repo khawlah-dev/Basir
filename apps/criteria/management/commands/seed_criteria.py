@@ -4,17 +4,17 @@ from apps.criteria.models import EvaluationCriterion
 
 
 DEFAULT_CRITERIA = [
-    ("domain_knowledge", "Domain Knowledge", 10),
-    ("planning_quality", "Planning Quality", 10),
-    ("instruction_delivery", "Instruction Delivery", 10),
-    ("classroom_management", "Classroom Management", 10),
-    ("student_engagement", "Student Engagement", 10),
-    ("assessment_use", "Assessment Use", 10),
-    ("communication", "Communication", 10),
-    ("collaboration", "Collaboration", 10),
-    ("professionalism", "Professionalism", 10),
-    ("attendance", "Attendance", 5),
-    ("timely_reporting", "Timely Reporting", 5),
+    ("domain_knowledge", "أداء الواجبات الوظيفية", 10),
+    ("planning_quality", "التفاعل مع المجتمع المهني", 10),
+    ("instruction_delivery", "التفاعل مع أولياء الأمور", 10),
+    ("classroom_management", "التنويع في استراتيجيات التدريس", 10),
+    ("student_engagement", "تحسين نتائج المتعلمين", 10),
+    ("assessment_use", "إعداد وتنفيذ خطة التعلم", 10),
+    ("communication", "توظيف تقنيات ووسائل التعلم المناسبة", 10),
+    ("collaboration", "تهيئة بيئة تعليمية", 10),
+    ("professionalism", "الإدارة الصفية", 10),
+    ("attendance", "تحليل نتائج المتعلمين وتشخيص مستوياتهم", 5),
+    ("timely_reporting", "تنوع أساليب التقويم", 5),
 ]
 
 

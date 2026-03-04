@@ -1,0 +1,12 @@
+{% extends "ui/base.html" %}
+{% block title %}الشواهد{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <h4 class="mb-3">لا يمكن فتح صفحة الشواهد</h4>
+    <p class="mb-2">هذا الحساب لا يحتوي على ملف معلم مرتبط.</p>
+    <p class="text-muted mb-3">يرجى من الإدارة إنشاء ربط بين المستخدم وملف المعلم من لوحة الإدارة.</p>
+    <a class="btn btn-outline-primary" href="{% url 'ui:dashboard' %}">العودة للوحة التحكم</a>
+  </div>
+</div>
+{% endblock %}

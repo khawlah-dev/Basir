@@ -2,18 +2,44 @@
 {% block title %}درجات المعايير{% endblock %}
 {% block content %}
 <h2 class="mb-3">إدخال درجات المعايير</h2>
-<p class="text-muted">المعلم: <strong>{{ evaluation.teacher }}</strong> | الدورة: <strong>{{ evaluation.cycle.name }}</strong></p>
+<p class="text-muted">المعلم: <strong>{{ evaluation.teacher }}</strong> | الفصل الدراسي: <strong>{{ evaluation.cycle.name }}</strong></p>
+<div class="mb-3 d-flex gap-2 flex-wrap">
+  <span class="badge text-bg-secondary">1. مراجعة الشواهد</span>
+  <span class="badge text-bg-warning">2. إدخال الدرجات (الحالي)</span>
+  <span class="badge text-bg-secondary">3. اعتماد التقييم</span>
+  <span class="badge text-bg-secondary">4. مراجعة المقارنة</span>
+</div>
 
 <div class="card">
   <div class="card-body">
     <form method="post">
       {% csrf_token %}
-      {% for field in form %}
+      {% for row in criterion_rows %}
+        {% with field=row.field %}
         <div class="mb-3">
           <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
           {{ field }}
           {% if field.errors %}<div class="text-danger small">{{ field.errors|striptags }}</div>{% endif %}
+          <div class="mt-2 border rounded p-2 bg-light">
+            <div class="fw-semibold small mb-1">شواهد المعلم لهذا العنصر:</div>
+            {% for evidence in row.evidences %}
+              <div class="small mb-1">
+                - {{ evidence.evidence_text }}
+                {% if evidence.attachments.all %}
+                  <div class="mt-1">
+                    {% for attachment in evidence.attachments.all %}
+                      <a href="{{ attachment.file.url }}" target="_blank" rel="noopener">{{ attachment.filename }}</a>{% if not forloop.last %} | {% endif %}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+                <span class="text-muted">({{ evidence.created_at }})</span>
+              </div>
+            {% empty %}
+              <div class="small text-muted">لا توجد شواهد مضافة لهذا العنصر.</div>
+            {% endfor %}
+          </div>
         </div>
+        {% endwith %}
       {% endfor %}
       <div class="d-flex gap-2">
         <button class="btn btn-primary" type="submit">حفظ الدرجات</button>

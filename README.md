@@ -4,6 +4,7 @@ This MVP computes:
 - Manager weighted score (11 fixed criteria)
 - **Partial Objective Score** from **only** `pd_hours` and `plans_count`
 - Deviation classification and neutral flags/cases for human review
+- Teacher evidence submission under each evaluation criterion
 
 ## Scope disclaimer
 The objective score in this MVP is intentionally **partial**. It does not measure all criteria and does not evaluate evidence quality.
@@ -44,6 +45,7 @@ The objective score in this MVP is intentionally **partial**. It does not measur
 - `/api/v1/auth/token/`
 - `/api/v1/metrics/snapshots/`
 - `/api/v1/evaluations/`
+- `/api/v1/evidences/`
 - `/api/v1/objective-scores/`
 - `/api/v1/comparisons/`
 - `/api/v1/flags/`
@@ -53,7 +55,13 @@ The objective score in this MVP is intentionally **partial**. It does not measur
 - `/login/` session login page
 - `/` role-based dashboard
 - `/metrics/` metric snapshots form/list
+- `/evidences/` teacher evidence form/list (teacher role)
+- `/semesters/manage/` semester management (leader/admin)
 - `/objective-scores/` objective totals (partial-score disclaimer shown)
 - `/evaluations/` create/edit/finalize manager evaluations (leader/admin)
 - `/comparisons/` manager vs objective comparison results
 - `/flags/` and `/cases/` review workflow (leader/admin)
+
+## Evidence Uploads
+- Teacher evidence supports direct upload (no link required): images, documents, and videos.
+- Files are served in development under `/media/`.

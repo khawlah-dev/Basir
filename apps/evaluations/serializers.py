@@ -4,7 +4,7 @@ from apps.accounts.permissions import can_access_teacher
 from apps.audit.services import log_audit
 from apps.criteria.models import EvaluationCriterion
 
-from .models import EvaluationItem, ManagerEvaluation, ScoreSummary
+from .models import EvaluationItem, ManagerEvaluation, ScoreSummary, TeacherEvidence
 
 
 class EvaluationItemInputSerializer(serializers.Serializer):
@@ -92,3 +92,57 @@ class EvaluationItemsUpsertSerializer(serializers.Serializer):
             after={"items_count": len(self.validated_data['items'])},
         )
         return evaluation
+
+
+class TeacherEvidenceSerializer(serializers.ModelSerializer):
+    criterion_name = serializers.CharField(source="criterion.name", read_only=True)
+    attachments = serializers.SerializerMethodField()
+
+    def get_attachments(self, obj):
+        return [
+            {
+                "id": attachment.id,
+                "file_url": attachment.file.url if attachment.file else "",
+                "filename": attachment.filename,
+                "uploaded_at": attachment.uploaded_at,
+            }
+            for attachment in obj.attachments.all()
+        ]
+
+    class Meta:
+        model = TeacherEvidence
+        fields = [
+            "id",
+            "teacher",
+            "cycle",
+            "criterion",
+            "criterion_name",
+            "evidence_text",
+            "submitted_by",
+            "attachments",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "submitted_by", "created_at", "updated_at", "criterion_name", "cycle", "attachments"]
+        extra_kwargs = {
+            "cycle": {"required": False},
+        }
+
+    def validate(self, attrs):
+        request = self.context["request"]
+        teacher = attrs.get("teacher") or getattr(self.instance, "teacher", None)
+        cycle = attrs.get("cycle") or getattr(self.instance, "cycle", None)
+        criterion = attrs.get("criterion") or getattr(self.instance, "criterion", None)
+
+        if not teacher or not criterion:
+            raise serializers.ValidationError("teacher and criterion are required")
+
+        if cycle and teacher.school_id != cycle.school_id:
+            raise serializers.ValidationError("Teacher and cycle must be in the same school")
+
+        if not criterion.is_active:
+            raise serializers.ValidationError("Evidence can only be added to active criteria")
+
+        if request.user.role == request.user.Role.TEACHER and teacher.user_id != request.user.id:
+            raise serializers.ValidationError("Teachers can only add their own evidence")
+        return attrs

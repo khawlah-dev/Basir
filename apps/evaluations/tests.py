@@ -3,11 +3,13 @@ from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 from django.test import TestCase
+from rest_framework.test import APIRequestFactory
 
 from apps.accounts.models import User
 from apps.criteria.models import EvaluationCriterion
 from apps.cycles.models import EvaluationCycle
 from apps.evaluations.models import EvaluationItem, ManagerEvaluation
+from apps.evaluations.serializers import TeacherEvidenceSerializer
 from apps.evaluations.services import compute_manager_total_score
 from apps.schools.models import School
 from apps.teachers.models import Teacher
@@ -47,3 +49,57 @@ class EvaluationScoringTests(TestCase):
 
         with self.assertRaises(ValidationError):
             compute_manager_total_score(evaluation)
+
+
+class TeacherEvidenceSerializerTests(TestCase):
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        self.school = School.objects.create(code="S2", name="School 2")
+        self.teacher_user = User.objects.create_user(username="teacher_a", password="x", role=User.Role.TEACHER, school=self.school)
+        self.other_teacher_user = User.objects.create_user(
+            username="teacher_b", password="x", role=User.Role.TEACHER, school=self.school
+        )
+        self.teacher = Teacher.objects.create(user=self.teacher_user, school=self.school, employee_id="EMP20")
+        self.other_teacher = Teacher.objects.create(user=self.other_teacher_user, school=self.school, employee_id="EMP21")
+        self.cycle = EvaluationCycle.objects.create(
+            school=self.school,
+            name="2025-2026",
+            start_date=date(2025, 9, 1),
+            end_date=date(2026, 6, 30),
+        )
+        self.criterion = EvaluationCriterion.objects.create(
+            key="k1",
+            name="C1",
+            weight_percent=10,
+            order=1,
+            is_active=True,
+        )
+
+    def test_teacher_can_submit_own_evidence(self):
+        request = self.factory.post("/api/v1/evidences/", {})
+        request.user = self.teacher_user
+        serializer = TeacherEvidenceSerializer(
+            data={
+                "teacher": self.teacher.id,
+                "cycle": self.cycle.id,
+                "criterion": self.criterion.id,
+                "evidence_text": "حضرت ورشة تدريبية.",
+            },
+            context={"request": request},
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_teacher_cannot_submit_evidence_for_another_teacher(self):
+        request = self.factory.post("/api/v1/evidences/", {})
+        request.user = self.teacher_user
+        serializer = TeacherEvidenceSerializer(
+            data={
+                "teacher": self.other_teacher.id,
+                "cycle": self.cycle.id,
+                "criterion": self.criterion.id,
+                "evidence_text": "شاهد غير مصرح.",
+            },
+            context={"request": request},
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("non_field_errors", serializer.errors)

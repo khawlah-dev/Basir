@@ -1,0 +1,59 @@
+{% extends "ui/base.html" %}
+{% block title %}إدارة الفصول الدراسية{% endblock %}
+{% block content %}
+<h2 class="mb-3">إدارة الفصول الدراسية</h2>
+
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-body">
+        <h5>إضافة فصل دراسي</h5>
+        <form method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button class="btn btn-primary" type="submit">حفظ الفصل الدراسي</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead>
+              <tr>
+                <th>المدرسة</th>
+                <th>اسم الفصل الدراسي</th>
+                <th>البداية</th>
+                <th>النهاية</th>
+                <th>الحالة</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for semester in semesters %}
+                <tr>
+                  <td>{{ semester.school.name }}</td>
+                  <td>{{ semester.name }}</td>
+                  <td>{{ semester.start_date }}</td>
+                  <td>{{ semester.end_date }}</td>
+                  <td>
+                    {% if semester.is_active %}
+                      <span class="badge text-bg-success">نشط</span>
+                    {% else %}
+                      <span class="badge text-bg-secondary">غير نشط</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="5" class="text-muted">لا توجد فصول دراسية.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

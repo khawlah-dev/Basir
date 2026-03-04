@@ -1,0 +1,65 @@
+{% extends "ui/base.html" %}
+{% block title %}إدارة المعلمين{% endblock %}
+{% block content %}
+<h2 class="mb-3">إدارة المعلمين</h2>
+<div class="mb-3">
+  <a class="btn btn-outline-secondary btn-sm" href="{% url 'ui:evidences-admin' %}">الانتقال إلى مراجعة الشواهد</a>
+  <a class="btn btn-outline-secondary btn-sm" href="{% url 'ui:semesters-manage' %}">إدارة الفصول الدراسية</a>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-body">
+        <h5>إضافة معلم جديد</h5>
+        <form method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button class="btn btn-primary" type="submit">إنشاء حساب معلم</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead>
+              <tr>
+                <th>اسم المستخدم</th>
+                <th>الاسم</th>
+                <th>المدرسة</th>
+                <th>الرقم الوظيفي</th>
+                <th>الحالة</th>
+                <th>تاريخ الإضافة</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for teacher in teachers %}
+                <tr>
+                  <td>{{ teacher.user.username }}</td>
+                  <td>{{ teacher.user.get_full_name|default:"-" }}</td>
+                  <td>{{ teacher.school.name }}</td>
+                  <td>{{ teacher.employee_id }}</td>
+                  <td>
+                    {% if teacher.is_active %}
+                      <span class="badge text-bg-success">نشط</span>
+                    {% else %}
+                      <span class="badge text-bg-secondary">غير نشط</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ teacher.created_at }}</td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="6" class="text-muted">لا يوجد معلمون في النطاق الحالي.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

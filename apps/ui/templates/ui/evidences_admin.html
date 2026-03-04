@@ -1,0 +1,89 @@
+{% extends "ui/base.html" %}
+{% block title %}مراجعة شواهد المعلمين{% endblock %}
+{% block content %}
+<h2 class="mb-2">مراجعة شواهد المعلمين</h2>
+<p class="text-muted">تستطيع مراجعة جميع المعلمين في نطاق صلاحيتك ومعرفة ما تم رفعه من شواهد تحت كل بند.</p>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-5">
+        <label class="form-label">بحث (اسم المستخدم/الاسم/الرقم الوظيفي)</label>
+        <input class="form-control" type="text" name="q" value="{{ search_text }}" placeholder="مثال: teacher1 أو T-1001">
+      </div>
+      <div class="col-md-5">
+        <label class="form-label">الفصل الدراسي</label>
+        <select class="form-select" name="cycle_id">
+          <option value="">كل الفصول</option>
+          {% for cycle in cycles %}
+            <option value="{{ cycle.id }}" {% if selected_cycle_id == cycle.id|stringformat:"s" %}selected{% endif %}>
+              {{ cycle.name }} - {{ cycle.school.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2 d-grid">
+        <button class="btn btn-primary" type="submit">تصفية</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="alert alert-info py-2">
+  إجمالي الشواهد ضمن نتائج التصفية: <strong>{{ total_evidence_count }}</strong>
+</div>
+
+{% for row in teacher_rows %}
+  <div class="card mb-3">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <div>
+        <strong>{{ row.teacher }}</strong>
+        <span class="text-muted">| {{ row.teacher.school.name }} | {{ row.teacher.employee_id }}</span>
+      </div>
+      <span class="badge {% if row.count > 0 %}text-bg-success{% else %}text-bg-secondary{% endif %}">
+        عدد الشواهد: {{ row.count }}
+      </span>
+    </div>
+    <div class="card-body">
+      {% if row.evidences %}
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead>
+              <tr>
+                <th>الفصل الدراسي</th>
+                <th>عنصر التقييم</th>
+                <th>وصف الشاهد</th>
+                <th>المرفقات</th>
+                <th>المستخدم الرافع</th>
+                <th>التاريخ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for evidence in row.evidences %}
+                <tr>
+                  <td>{{ evidence.cycle.name }}</td>
+                  <td>{{ evidence.criterion.name }}</td>
+                  <td>{{ evidence.evidence_text|linebreaksbr }}</td>
+                  <td>
+                    {% for attachment in evidence.attachments.all %}
+                      <div><a href="{{ attachment.file.url }}" target="_blank" rel="noopener">{{ attachment.filename }}</a></div>
+                    {% empty %}
+                      -
+                    {% endfor %}
+                  </td>
+                  <td>{{ evidence.submitted_by.username }}</td>
+                  <td>{{ evidence.created_at }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="text-muted">لا توجد شواهد مرفوعة لهذا المعلم حسب التصفية الحالية.</div>
+      {% endif %}
+    </div>
+  </div>
+{% empty %}
+  <div class="alert alert-secondary">لا يوجد معلمون في النطاق الحالي.</div>
+{% endfor %}
+{% endblock %}

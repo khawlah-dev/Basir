@@ -1,0 +1,74 @@
+{% extends "ui/base.html" %}
+{% block title %}الشواهد{% endblock %}
+{% block content %}
+<h2 class="mb-3">شواهد المعلم</h2>
+<p class="text-muted">أضيفي الشواهد تحت عنصر التقييم المناسب. هذه الشواهد تظهر للقائد أثناء التقييم.</p>
+{% if current_semester %}
+  <div class="alert alert-info py-2">الفصل الدراسي الحالي المعتمد لرفع الشواهد: <strong>{{ current_semester.name }}</strong></div>
+{% else %}
+  <div class="alert alert-warning py-2">لا يوجد فصل دراسي نشط حالياً. يجب على المدير إضافة فصل دراسي أولاً.</div>
+{% endif %}
+
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-body">
+        <h5>إضافة شاهد جديد</h5>
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button class="btn btn-primary" type="submit">حفظ الشاهد</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead>
+              <tr>
+                <th>الفصل الدراسي</th>
+                <th>عنصر التقييم</th>
+                <th>وصف الشاهد</th>
+                <th>المرفقات</th>
+                <th>التاريخ</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for evidence in evidences %}
+              <tr>
+                <td>{{ evidence.cycle.name }}</td>
+                <td>{{ evidence.criterion.name }}</td>
+                <td>{{ evidence.evidence_text|truncatechars:120 }}</td>
+                <td>
+                  {% for attachment in evidence.attachments.all %}
+                    <div><a href="{{ attachment.file.url }}" target="_blank" rel="noopener">{{ attachment.filename }}</a></div>
+                  {% empty %}
+                    -
+                  {% endfor %}
+                </td>
+                <td>{{ evidence.created_at }}</td>
+                <td>
+                  <form method="post" action="{% url 'ui:evidence-delete' evidence.id %}">
+                    {% csrf_token %}
+                    <button class="btn btn-outline-danger btn-sm" type="submit">حذف</button>
+                  </form>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="6" class="text-muted">لا توجد شواهد مضافة حتى الآن.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
