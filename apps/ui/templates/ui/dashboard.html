@@ -1,12 +1,56 @@
 {% extends "ui/base.html" %}
 {% block title %}لوحة التحكم{% endblock %}
+{% block extra_head %}
+<style>
+  .dashboard-hero {
+    background: linear-gradient(135deg, rgba(13, 75, 115, 0.96), rgba(42, 167, 176, 0.88));
+    border-radius: 22px;
+    padding: 1.4rem 1.5rem;
+    color: #fff;
+    box-shadow: 0 16px 30px rgba(12, 66, 100, 0.26);
+  }
+
+  .dashboard-hero h2 {
+    color: #fff;
+    margin-bottom: 0.25rem;
+  }
+
+  .dashboard-hero .badge {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    color: #fff;
+  }
+
+  .scope-note {
+    border-right: 5px solid #2aa7b0;
+  }
+
+  .kpi-grid .card {
+    overflow: hidden;
+    position: relative;
+  }
+
+  .kpi-grid .card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #0d4b73, #2aa7b0);
+  }
+</style>
+{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <h2>لوحة التحكم</h2>
-  <span class="badge text-bg-secondary">الدور: {{ request.user.role }}</span>
+<div class="dashboard-hero d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <div>
+    <h2>لوحة التحكم</h2>
+    <div class="small">متابعة الأداء، التقييمات، والشواهد في مكان واحد</div>
+  </div>
+  <span class="badge">الدور: {{ request.user.role }}</span>
 </div>
 
-<div class="alert alert-warning">
+<div class="alert alert-warning scope-note">
   <strong>نطاق الدرجة الموضوعية:</strong>
   هذه درجة موضوعية جزئية محسوبة فقط من <code>pd_hours</code> و <code>plans_count</code>.
 </div>
@@ -24,7 +68,7 @@
     </div>
   </div>
 
-  <div class="row g-3 mb-4">
+  <div class="row g-3 mb-4 kpi-grid">
     <div class="col-md-3"><div class="card"><div class="card-body"><h6>عدد المعلمين</h6><h3>{{ manager_dashboard.total_teachers }}</h3></div></div></div>
     <div class="col-md-3"><div class="card"><div class="card-body"><h6>قيد الإدخال</h6><h3>{{ manager_dashboard.draft_count }}</h3></div></div></div>
     <div class="col-md-2"><div class="card"><div class="card-body"><h6>معتمد</h6><h3>{{ manager_dashboard.final_count }}</h3></div></div></div>
@@ -296,67 +340,73 @@
   {{ manager_dashboard.top_chart_labels|json_script:"top-teachers-labels" }}
   {{ manager_dashboard.top_chart_manager_values|json_script:"top-teachers-manager-values" }}
   {{ manager_dashboard.top_chart_objective_values|json_script:"top-teachers-objective-values" }}
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script>
-    (function () {
-      const levelLabels = JSON.parse(document.getElementById("teacher-level-labels").textContent);
-      const levelValues = JSON.parse(document.getElementById("teacher-level-values").textContent);
-      const topLabels = JSON.parse(document.getElementById("top-teachers-labels").textContent);
-      const topManagerValues = JSON.parse(document.getElementById("top-teachers-manager-values").textContent);
-      const topObjectiveValues = JSON.parse(document.getElementById("top-teachers-objective-values").textContent);
-
-      const levelCanvas = document.getElementById("teacherLevelChart");
-      if (levelCanvas) {
-        new Chart(levelCanvas, {
-          type: "doughnut",
-          data: {
-            labels: levelLabels,
-            datasets: [{
-              data: levelValues,
-              backgroundColor: ["#198754", "#0d6efd", "#fd7e14", "#dc3545", "#6c757d"]
-            }]
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: { position: "bottom" }
-            }
-          }
-        });
-      }
-
-      const topCanvas = document.getElementById("topTeachersChart");
-      if (topCanvas) {
-        new Chart(topCanvas, {
-          type: "bar",
-          data: {
-            labels: topLabels,
-            datasets: [
-              {
-                label: "درجة المدير",
-                data: topManagerValues,
-                backgroundColor: "#0d6efd"
-              },
-              {
-                label: "الدرجة الموضوعية الجزئية",
-                data: topObjectiveValues,
-                backgroundColor: "#20c997"
-              }
-            ]
-          },
-          options: {
-            responsive: true,
-            scales: {
-              y: {
-                beginAtZero: true,
-                max: 100
-              }
-            }
-          }
-        });
-      }
-    })();
-  </script>
 {% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+  {% if manager_dashboard %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+      (function () {
+        const levelLabels = JSON.parse(document.getElementById("teacher-level-labels").textContent);
+        const levelValues = JSON.parse(document.getElementById("teacher-level-values").textContent);
+        const topLabels = JSON.parse(document.getElementById("top-teachers-labels").textContent);
+        const topManagerValues = JSON.parse(document.getElementById("top-teachers-manager-values").textContent);
+        const topObjectiveValues = JSON.parse(document.getElementById("top-teachers-objective-values").textContent);
+
+        const levelCanvas = document.getElementById("teacherLevelChart");
+        if (levelCanvas) {
+          new Chart(levelCanvas, {
+            type: "doughnut",
+            data: {
+              labels: levelLabels,
+              datasets: [{
+                data: levelValues,
+                backgroundColor: ["#0d4b73", "#2aa7b0", "#66cbd0", "#f2a541", "#8da4b5"]
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: { position: "bottom" }
+              }
+            }
+          });
+        }
+
+        const topCanvas = document.getElementById("topTeachersChart");
+        if (topCanvas) {
+          new Chart(topCanvas, {
+            type: "bar",
+            data: {
+              labels: topLabels,
+              datasets: [
+                {
+                  label: "درجة المدير",
+                  data: topManagerValues,
+                  backgroundColor: "#0d4b73",
+                  borderRadius: 8
+                },
+                {
+                  label: "الدرجة الموضوعية الجزئية",
+                  data: topObjectiveValues,
+                  backgroundColor: "#2aa7b0",
+                  borderRadius: 8
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  max: 100
+                }
+              }
+            }
+          });
+        }
+      })();
+    </script>
+  {% endif %}
 {% endblock %}
