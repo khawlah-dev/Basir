@@ -3,11 +3,12 @@
 {% block extra_head %}
 <style>
   .dashboard-hero {
-    background: linear-gradient(135deg, rgba(13, 75, 115, 0.96), rgba(42, 167, 176, 0.88));
+    background: linear-gradient(135deg, rgba(23, 48, 64, 0.97), rgba(34, 84, 115, 0.95) 55%, rgba(55, 140, 140, 0.9));
     border-radius: 22px;
     padding: 1.4rem 1.5rem;
     color: #fff;
-    box-shadow: 0 16px 30px rgba(12, 66, 100, 0.26);
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.34);
+    border: 1px solid rgba(212, 251, 255, 0.45);
   }
 
   .dashboard-hero h2 {
@@ -22,7 +23,7 @@
   }
 
   .scope-note {
-    border-right: 5px solid #2aa7b0;
+    border-right: 5px solid #FFEDD4;
   }
 
   .kpi-grid .card {
@@ -37,17 +38,37 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #0d4b73, #2aa7b0);
+    background: linear-gradient(90deg, #378C8C, #D4FBFF, #FFEDD4);
   }
 </style>
 {% endblock %}
 {% block content %}
 <div class="dashboard-hero d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
   <div>
-    <h2>لوحة التحكم</h2>
-    <div class="small">متابعة الأداء، التقييمات، والشواهد في مكان واحد</div>
+    <h2>{{ request.user.get_full_name|default:request.user.username }}</h2>
+    <div class="small">
+      {% if request.user.role == 'TEACHER' %}
+        المعلم
+      {% elif request.user.role == 'LEADER' %}
+        المدير
+      {% elif request.user.role == 'ADMIN' %}
+        مدير النظام
+      {% else %}
+        {{ request.user.role }}
+      {% endif %}
+    </div>
   </div>
-  <span class="badge">الدور: {{ request.user.role }}</span>
+  <span class="badge">
+    {% if request.user.role == 'TEACHER' %}
+      حساب معلم
+    {% elif request.user.role == 'LEADER' %}
+      حساب مدير
+    {% elif request.user.role == 'ADMIN' %}
+      حساب مدير نظام
+    {% else %}
+      {{ request.user.role }}
+    {% endif %}
+  </span>
 </div>
 
 <div class="alert alert-warning scope-note">
@@ -362,13 +383,16 @@
               labels: levelLabels,
               datasets: [{
                 data: levelValues,
-                backgroundColor: ["#0d4b73", "#2aa7b0", "#66cbd0", "#f2a541", "#8da4b5"]
+                backgroundColor: ["#225473", "#378C8C", "#173040", "#D4FBFF", "#FFEDD4"]
               }]
             },
             options: {
               responsive: true,
               plugins: {
-                legend: { position: "bottom" }
+                legend: {
+                  position: "bottom",
+                  labels: { color: "#F2F2F0" }
+                }
               }
             }
           });
@@ -384,21 +408,34 @@
                 {
                   label: "درجة المدير",
                   data: topManagerValues,
-                  backgroundColor: "#0d4b73",
+                  backgroundColor: "#378C8C",
                   borderRadius: 8
                 },
                 {
                   label: "الدرجة الموضوعية الجزئية",
                   data: topObjectiveValues,
-                  backgroundColor: "#2aa7b0",
+                  backgroundColor: "#D4FBFF",
+                  borderColor: "#173040",
+                  borderWidth: 1,
                   borderRadius: 8
                 }
               ]
             },
             options: {
               responsive: true,
+              plugins: {
+                legend: {
+                  labels: { color: "#F2F2F0" }
+                }
+              },
               scales: {
+                x: {
+                  ticks: { color: "#F2F2F0" },
+                  grid: { color: "rgba(242, 242, 240, 0.08)" }
+                },
                 y: {
+                  ticks: { color: "#F2F2F0" },
+                  grid: { color: "rgba(242, 242, 240, 0.16)" },
                   beginAtZero: true,
                   max: 100
                 }

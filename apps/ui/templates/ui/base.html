@@ -1,3 +1,4 @@
+{% load static %}
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
@@ -10,53 +11,71 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
   <style>
     :root {
-      --brand-navy: #0d4b73;
-      --brand-navy-deep: #0a3654;
-      --brand-teal: #2aa7b0;
-      --brand-teal-soft: #66cbd0;
-      --ink: #163d56;
-      --ink-soft: #5f7a8d;
-      --surface: #ffffff;
-      --surface-soft: #f4f9fb;
-      --line: #d7e6ee;
-      --shadow: 0 14px 32px rgba(13, 75, 115, 0.12);
+      --brand-primary: #225473;
+      --brand-deep: #173040;
+      --brand-accent: #378C8C;
+      --accent-warm: #FFEDD4;
+      --accent-cool: #D4FBFF;
+      --bg-main: #182621;
+      --text-main: #F2F2F0;
+      --text-muted: #D6E1DF;
+      --surface: #173040;
+      --surface-soft: #225473;
+      --line: rgba(242, 242, 240, 0.22);
+      --shadow: 0 16px 30px rgba(0, 0, 0, 0.34);
     }
 
     body {
       font-family: "Cairo", sans-serif;
-      color: var(--ink);
+      color: var(--text-main);
       background:
-        radial-gradient(circle at 92% 8%, rgba(42, 167, 176, 0.13), transparent 30%),
-        radial-gradient(circle at 8% 4%, rgba(13, 75, 115, 0.1), transparent 24%),
-        linear-gradient(180deg, #f9fcfd 0%, #eef5f9 100%);
+        radial-gradient(circle at 92% 8%, rgba(55, 140, 140, 0.16), transparent 30%),
+        radial-gradient(circle at 8% 4%, rgba(34, 84, 115, 0.2), transparent 25%),
+        linear-gradient(180deg, #182621 0%, #173040 100%);
       min-height: 100vh;
     }
 
     code {
       direction: ltr;
       display: inline-block;
-      color: var(--brand-navy-deep);
-      background: #e8f3f5;
+      color: var(--text-main);
+      background: rgba(212, 251, 255, 0.18);
       border-radius: 8px;
       padding: 0 6px;
     }
 
     h1, h2, h3, h4, h5, h6 {
       font-weight: 700;
-      color: var(--brand-navy-deep);
+      color: var(--text-main);
     }
 
     .navbar {
-      background: linear-gradient(120deg, var(--brand-navy-deep), var(--brand-navy) 55%, #1d6e97);
-      box-shadow: 0 10px 28px rgba(10, 54, 84, 0.28);
+      background: linear-gradient(120deg, #173040, #225473 55%, #378C8C);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
     }
 
     .navbar-brand {
-      font-weight: 800;
-      letter-spacing: 0.2px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.16rem 0.35rem;
+      border-radius: 14px;
+      background: #F2F2F0;
+      border: 1px solid rgba(212, 251, 255, 0.45);
+    }
+
+    .brand-logo {
+      height: 58px;
+      width: auto;
+      display: block;
+    }
+
+    @media (max-width: 991px) {
+      .brand-logo { height: 46px; }
     }
 
     .navbar-nav .nav-link {
+      color: rgba(242, 242, 240, 0.9);
       border-radius: 10px;
       padding-inline: 10px;
       transition: background-color 0.2s ease, color 0.2s ease;
@@ -64,7 +83,7 @@
 
     .navbar-nav .nav-link:hover,
     .navbar-nav .nav-link:focus-visible {
-      background: rgba(255, 255, 255, 0.14);
+      background: rgba(242, 242, 240, 0.16);
       color: #ffffff;
     }
 
@@ -76,8 +95,7 @@
       border: 1px solid var(--line);
       border-radius: 18px;
       box-shadow: var(--shadow);
-      background: rgba(255, 255, 255, 0.94);
-      backdrop-filter: blur(2px);
+      background: var(--surface);
     }
 
     .card .card-body {
@@ -86,19 +104,28 @@
 
     .table {
       --bs-table-bg: transparent;
-      --bs-table-border-color: #e2edf3;
-      color: var(--ink);
+      --bs-table-border-color: var(--line);
+      color: var(--text-main);
     }
 
     .table thead th {
-      background: var(--surface-soft);
-      color: var(--brand-navy-deep);
+      background: linear-gradient(120deg, rgba(34, 84, 115, 0.95), rgba(23, 48, 64, 0.95));
+      color: var(--text-main);
       border-bottom-width: 1px;
       font-weight: 700;
     }
 
     .table tbody tr:hover {
-      background: rgba(102, 203, 208, 0.12);
+      background: rgba(212, 251, 255, 0.12);
+    }
+
+    .table td,
+    .table th,
+    .form-label,
+    .navbar-text,
+    p,
+    li {
+      color: var(--text-main);
     }
 
     .btn {
@@ -109,46 +136,78 @@
 
     .btn-primary {
       border: none;
-      background: linear-gradient(120deg, var(--brand-navy), var(--brand-teal));
+      color: #F2F2F0;
+      background: linear-gradient(120deg, #225473, #378C8C);
     }
 
     .btn-primary:hover,
     .btn-primary:focus-visible {
-      background: linear-gradient(120deg, var(--brand-navy-deep), #23949c);
+      color: #F2F2F0;
+      background: linear-gradient(120deg, #173040, #378C8C);
     }
 
     .btn-outline-primary {
-      border-color: var(--brand-teal);
-      color: var(--brand-navy);
+      border-color: var(--accent-cool);
+      color: #F2F2F0;
     }
 
     .btn-outline-primary:hover {
-      background: var(--brand-teal);
-      border-color: var(--brand-teal);
-      color: #ffffff;
+      background: var(--accent-cool);
+      border-color: var(--accent-cool);
+      color: #182621;
     }
 
     .btn-outline-info {
-      border-color: #3ab5be;
-      color: var(--brand-navy);
+      border-color: var(--accent-cool);
+      color: #F2F2F0;
+    }
+
+    .btn-outline-info:hover {
+      background: var(--accent-cool);
+      border-color: var(--accent-cool);
+      color: #182621;
     }
 
     .btn-outline-dark {
-      border-color: #7c95a6;
-      color: var(--ink);
+      border-color: rgba(242, 242, 240, 0.35);
+      color: #F2F2F0;
+    }
+
+    .btn-outline-secondary {
+      border-color: rgba(242, 242, 240, 0.28);
+      color: #F2F2F0;
+    }
+
+    .btn-outline-secondary:hover,
+    .btn-outline-dark:hover {
+      background: rgba(242, 242, 240, 0.18);
+      color: #F2F2F0;
     }
 
     .form-control,
     .form-select {
       border-radius: 12px;
-      border-color: #cadde7;
+      border-color: rgba(55, 140, 140, 0.55);
+      background-color: rgba(24, 38, 33, 0.7);
+      color: #F2F2F0;
       min-height: 44px;
+    }
+
+    .form-control::placeholder {
+      color: var(--text-muted);
     }
 
     .form-control:focus,
     .form-select:focus {
-      border-color: var(--brand-teal);
-      box-shadow: 0 0 0 0.2rem rgba(42, 167, 176, 0.18);
+      color: #F2F2F0;
+      background-color: rgba(24, 38, 33, 0.8);
+      border-color: #378C8C;
+      box-shadow: 0 0 0 0.2rem rgba(55, 140, 140, 0.2);
+    }
+
+    .form-select option {
+      background-color: #173040;
+      color: #F2F2F0;
     }
 
     .badge {
@@ -158,35 +217,89 @@
     }
 
     .text-bg-primary {
-      background-color: var(--brand-navy) !important;
-      color: #fff !important;
+      background-color: #225473 !important;
+      color: #F2F2F0 !important;
     }
 
     .text-bg-info {
-      background-color: var(--brand-teal) !important;
-      color: #fff !important;
+      background-color: var(--accent-cool) !important;
+      color: #173040 !important;
     }
 
     .text-bg-secondary {
-      background-color: #6c8394 !important;
-      color: #fff !important;
+      background-color: #173040 !important;
+      color: #F2F2F0 !important;
+    }
+
+    .text-bg-success {
+      background-color: #378C8C !important;
+      color: #F2F2F0 !important;
+    }
+
+    .text-bg-warning {
+      background-color: var(--accent-warm) !important;
+      color: #173040 !important;
+    }
+
+    .text-bg-danger {
+      background-color: #182621 !important;
+      color: #F2F2F0 !important;
+      border: 1px solid rgba(242, 242, 240, 0.2);
+    }
+
+    .text-bg-light {
+      background-color: rgba(212, 251, 255, 0.2) !important;
+      color: #F2F2F0 !important;
     }
 
     .alert {
       border-radius: 14px;
       border-width: 1px;
+      color: #F2F2F0;
     }
 
     .alert-warning {
-      background: #fef8e9;
-      border-color: #f6e3a9;
-      color: #735c10;
+      background: rgba(255, 237, 212, 0.12);
+      border-color: rgba(255, 237, 212, 0.75);
+      color: var(--accent-warm);
     }
 
     .alert-info {
-      background: #ebf8fb;
-      border-color: #c3e9ef;
-      color: #0f4c75;
+      background: rgba(212, 251, 255, 0.12);
+      border-color: rgba(212, 251, 255, 0.7);
+      color: var(--accent-cool);
+    }
+
+    .alert-danger {
+      background: rgba(24, 38, 33, 0.85);
+      border-color: rgba(242, 242, 240, 0.2);
+      color: #F2F2F0;
+    }
+
+    .text-muted {
+      color: var(--text-muted) !important;
+    }
+
+    .small {
+      color: var(--text-muted);
+    }
+
+    a {
+      color: var(--accent-cool);
+    }
+
+    a:hover {
+      color: var(--accent-warm);
+    }
+
+    hr {
+      border-color: var(--line);
+      opacity: 1;
+    }
+
+    .bg-light {
+      background-color: rgba(34, 84, 115, 0.25) !important;
+      color: #F2F2F0 !important;
     }
   </style>
   {% block extra_head %}{% endblock %}
@@ -194,7 +307,9 @@
 <body>
   <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container-fluid">
-      <a class="navbar-brand" href="{% url 'ui:dashboard' %}">بصير | منصة تقييم المعلمين</a>
+      <a class="navbar-brand" href="{% url 'ui:dashboard' %}" aria-label="Basir">
+        <img class="brand-logo" src="{% static 'ui/images/Artboard1.jpg' %}?v=20260305" alt="بصير">
+      </a>
       <div class="collapse navbar-collapse show">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item"><a class="nav-link" href="{% url 'ui:dashboard' %}">لوحة التحكم</a></li>
