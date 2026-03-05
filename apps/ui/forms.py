@@ -64,6 +64,10 @@ class MetricSnapshotForm(forms.ModelForm):
         cleaned = super().clean()
         teacher = cleaned.get("teacher")
         cycle = cleaned.get("cycle")
+        if self.user.role != self.user.Role.TEACHER:
+            raise ValidationError("إدخال المؤشرات متاح للمعلم فقط، والاعتماد للمدير.")
+        if teacher and teacher.user_id != self.user.id:
+            raise ValidationError("يمكن للمعلم إدخال مؤشراته فقط.")
         if teacher and cycle and teacher.school_id != cycle.school_id:
             raise ValidationError("يجب أن ينتمي المعلم والفصل الدراسي إلى نفس المدرسة.")
         return cleaned

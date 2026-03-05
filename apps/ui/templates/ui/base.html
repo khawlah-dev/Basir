@@ -318,7 +318,7 @@
             <li class="nav-item"><a class="nav-link" href="{% url 'ui:evidences' %}">الشواهد</a></li>
           {% endif %}
           {% if request.user.role == 'LEADER' or request.user.role == 'ADMIN' %}
-            <li class="nav-item"><a class="nav-link" href="{% url 'ui:evidences-admin' %}">إدارة الشواهد</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'ui:evidences-admin' %}">مراجعة الشواهد</a></li>
           {% endif %}
           <li class="nav-item"><a class="nav-link" href="{% url 'ui:objective-scores' %}">الدرجات الموضوعية</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'ui:comparisons' %}">المقارنات</a></li>

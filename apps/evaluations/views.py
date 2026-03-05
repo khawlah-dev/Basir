@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 
 from apps.accounts.models import User
-from apps.accounts.permissions import IsLeaderOrAdmin, IsTeacherLeaderOrAdmin
+from apps.accounts.permissions import IsLeaderOrAdmin, IsTeacher, IsTeacherLeaderOrAdmin
 from apps.accounts.throttles import SensitiveActionThrottle, WriteUserThrottle
 from apps.audit.services import log_audit
 from apps.comparisons.services import compare_scores_and_generate_flags
@@ -83,6 +83,13 @@ class ManagerEvaluationViewSet(viewsets.ModelViewSet):
 class TeacherEvidenceViewSet(viewsets.ModelViewSet):
     serializer_class = TeacherEvidenceSerializer
     permission_classes = [IsTeacherLeaderOrAdmin]
+
+    def get_permissions(self):
+        if self.action in ["create", "update", "partial_update", "destroy"]:
+            permission_classes = [IsTeacher]
+        else:
+            permission_classes = [IsTeacherLeaderOrAdmin]
+        return [permission() for permission in permission_classes]
 
     def get_throttles(self):
         if self.action in ["create", "update", "partial_update", "destroy"]:

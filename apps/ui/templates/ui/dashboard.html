@@ -231,7 +231,8 @@
               <td>
                 <div class="small">
                   المؤشرات:
-                  {% if row.has_metrics %}<span class="badge text-bg-success">موجود</span>{% else %}<span class="badge text-bg-secondary">غير موجود</span>{% endif %}
+                  {% if row.has_metrics %}<span class="badge text-bg-success">معتمدة</span>{% else %}<span class="badge text-bg-secondary">غير معتمدة</span>{% endif %}
+                  {% if row.has_pending_metrics %}<span class="badge text-bg-warning">بانتظار الاعتماد</span>{% endif %}
                 </div>
                 <div class="small mt-1">
                   الشواهد: <span class="badge text-bg-info">{{ row.evidence_count }}</span>

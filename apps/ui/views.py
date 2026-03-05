@@ -154,6 +154,7 @@ def dashboard(request: HttpRequest) -> HttpResponse:
         comparison_map = {}
         evidence_count_map = {}
         metrics_set = set()
+        pending_metrics_set = set()
         objective_set = set()
         objective_total_map = {}
         top_teachers = []
@@ -180,11 +181,14 @@ def dashboard(request: HttpRequest) -> HttpResponse:
                 .annotate(total=Count("id"))
             }
 
-            metrics_set = set(
-                TeacherMetricSnapshot.objects.filter(teacher_id__in=teacher_ids, cycle=selected_cycle).values_list(
-                    "teacher_id", flat=True
-                )
+            metrics_rows = TeacherMetricSnapshot.objects.filter(teacher_id__in=teacher_ids, cycle=selected_cycle).values(
+                "teacher_id", "approval_status"
             )
+            for metric_row in metrics_rows:
+                if metric_row["approval_status"] == TeacherMetricSnapshot.ApprovalStatus.APPROVED:
+                    metrics_set.add(metric_row["teacher_id"])
+                else:
+                    pending_metrics_set.add(metric_row["teacher_id"])
             objective_scores = ObjectiveScore.objects.filter(teacher_id__in=teacher_ids, cycle=selected_cycle)
             objective_total_map = {item.teacher_id: item.objective_total for item in objective_scores}
             objective_set = set(objective_total_map.keys())
@@ -294,6 +298,7 @@ def dashboard(request: HttpRequest) -> HttpResponse:
                     "comparison": comparison,
                     "evidence_count": evidence_count_map.get(item.id, 0),
                     "has_metrics": item.id in metrics_set,
+                    "has_pending_metrics": item.id in pending_metrics_set,
                     "has_objective": item.id in objective_set,
                     "evaluation_state": evaluation_state,
                     "evaluation_badge": evaluation_badge,
@@ -351,11 +356,45 @@ def dashboard(request: HttpRequest) -> HttpResponse:
 def metrics_page(request: HttpRequest) -> HttpResponse:
     snapshots = (
         _by_role_queryset(request.user, TeacherMetricSnapshot)
-        .select_related("teacher", "teacher__user", "cycle")
+        .select_related("teacher", "teacher__user", "cycle", "approved_by")
         .order_by("-created_at")
     )
+    can_approve = request.user.role in [User.Role.LEADER, User.Role.ADMIN]
+    is_teacher = request.user.role == User.Role.TEACHER
 
     if request.method == "POST":
+        action = request.POST.get("action", "submit_metric")
+        if action == "approve_metric":
+            if not can_approve:
+                messages.error(request, "اعتماد المؤشرات متاح للمدير فقط.")
+                return redirect("ui:dashboard")
+            snapshot_id = request.POST.get("snapshot_id")
+            snapshot = get_object_or_404(_by_role_queryset(request.user, TeacherMetricSnapshot), id=snapshot_id)
+            if snapshot.approval_status == TeacherMetricSnapshot.ApprovalStatus.APPROVED:
+                messages.info(request, "هذا السجل معتمد مسبقًا.")
+                return redirect("ui:metrics")
+            snapshot.approval_status = TeacherMetricSnapshot.ApprovalStatus.APPROVED
+            snapshot.approved_by = request.user
+            snapshot.approved_at = timezone.now()
+            snapshot.save(update_fields=["approval_status", "approved_by", "approved_at"])
+            log_audit(
+                actor=request.user,
+                action="metrics.approved",
+                entity_type="TeacherMetricSnapshot",
+                entity_id=str(snapshot.id),
+                after={
+                    "teacher_id": snapshot.teacher_id,
+                    "cycle_id": snapshot.cycle_id,
+                    "approved_by": request.user.id,
+                },
+            )
+            messages.success(request, "تم اعتماد سجل المؤشرات بنجاح.")
+            return redirect("ui:metrics")
+
+        if not is_teacher:
+            messages.error(request, "إدخال المؤشرات متاح للمعلم فقط، والاعتماد للمدير.")
+            return redirect("ui:dashboard")
+
         form = MetricSnapshotForm(request.POST, user=request.user)
         if form.is_valid():
             data = form.cleaned_data
@@ -368,11 +407,14 @@ def metrics_page(request: HttpRequest) -> HttpResponse:
                             "pd_hours": data["pd_hours"],
                             "plans_count": data["plans_count"],
                             "created_by": request.user,
+                            "approval_status": TeacherMetricSnapshot.ApprovalStatus.PENDING,
+                            "approved_by": None,
+                            "approved_at": None,
                         },
                     )
                     log_audit(
                         actor=request.user,
-                        action="metrics.created" if created else "metrics.updated",
+                        action="metrics.submitted" if created else "metrics.resubmitted",
                         entity_type="TeacherMetricSnapshot",
                         entity_id=str(obj.id),
                         after={
@@ -382,14 +424,18 @@ def metrics_page(request: HttpRequest) -> HttpResponse:
                             "plans_count": obj.plans_count,
                         },
                     )
-                messages.success(request, "تم حفظ بيانات المؤشرات بنجاح.")
+                messages.success(request, "تم إرسال سجل المؤشرات للمراجعة والاعتماد.")
                 return redirect("ui:metrics")
             except IntegrityError:
                 messages.error(request, "تعذر حفظ البيانات بسبب تعارض في السجلات.")
     else:
-        form = MetricSnapshotForm(user=request.user)
+        form = MetricSnapshotForm(user=request.user) if is_teacher else None
 
-    return render(request, "ui/metrics.html", {"form": form, "snapshots": snapshots})
+    return render(
+        request,
+        "ui/metrics.html",
+        {"form": form, "snapshots": snapshots, "can_approve": can_approve, "is_teacher": is_teacher},
+    )
 
 
 @login_required

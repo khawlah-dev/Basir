@@ -8,6 +8,11 @@ class IsAdmin(BasePermission):
         return request.user.is_authenticated and request.user.role == User.Role.ADMIN
 
 
+class IsTeacher(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.role == User.Role.TEACHER
+
+
 class IsLeaderOrAdmin(BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.role in [User.Role.LEADER, User.Role.ADMIN]

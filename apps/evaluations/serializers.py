@@ -137,6 +137,9 @@ class TeacherEvidenceSerializer(serializers.ModelSerializer):
         if not teacher or not criterion:
             raise serializers.ValidationError("teacher and criterion are required")
 
+        if self.instance is None and request.user.role != request.user.Role.TEACHER:
+            raise serializers.ValidationError("Only teachers can submit evidence")
+
         if cycle and teacher.school_id != cycle.school_id:
             raise serializers.ValidationError("Teacher and cycle must be in the same school")
 

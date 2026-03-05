@@ -3,14 +3,15 @@ from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from rest_framework.test import APIRequestFactory
+from rest_framework.test import APIRequestFactory, force_authenticate
 
 from apps.accounts.models import User
 from apps.criteria.models import EvaluationCriterion
 from apps.cycles.models import EvaluationCycle
-from apps.evaluations.models import EvaluationItem, ManagerEvaluation
+from apps.evaluations.models import EvaluationItem, ManagerEvaluation, TeacherEvidence
 from apps.evaluations.serializers import TeacherEvidenceSerializer
 from apps.evaluations.services import compute_manager_total_score
+from apps.evaluations.views import TeacherEvidenceViewSet
 from apps.schools.models import School
 from apps.teachers.models import Teacher
 
@@ -103,3 +104,57 @@ class TeacherEvidenceSerializerTests(TestCase):
         )
         self.assertFalse(serializer.is_valid())
         self.assertIn("non_field_errors", serializer.errors)
+
+
+class TeacherEvidenceViewSetPermissionsTests(TestCase):
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        self.school = School.objects.create(code="S3", name="School 3")
+        self.leader_user = User.objects.create_user(username="leader_s3", password="x", role=User.Role.LEADER, school=self.school)
+        self.teacher_user = User.objects.create_user(
+            username="teacher_s3", password="x", role=User.Role.TEACHER, school=self.school
+        )
+        self.teacher = Teacher.objects.create(user=self.teacher_user, school=self.school, employee_id="EMP30")
+        self.cycle = EvaluationCycle.objects.create(
+            school=self.school,
+            name="2025-2026",
+            start_date=date(2025, 9, 1),
+            end_date=date(2026, 6, 30),
+            is_active=True,
+        )
+        self.criterion = EvaluationCriterion.objects.create(
+            key="k1s3",
+            name="C1-S3",
+            weight_percent=10,
+            order=1,
+            is_active=True,
+        )
+
+    def test_leader_cannot_create_evidence(self):
+        view = TeacherEvidenceViewSet.as_view({"post": "create"})
+        request = self.factory.post(
+            "/api/v1/evidences/",
+            {
+                "teacher": self.teacher.id,
+                "criterion": self.criterion.id,
+                "evidence_text": "محاولة رفع من المدير.",
+            },
+        )
+        force_authenticate(request, user=self.leader_user)
+        response = view(request)
+        self.assertEqual(response.status_code, 403)
+
+    def test_leader_can_list_evidences_for_review(self):
+        TeacherEvidence.objects.create(
+            teacher=self.teacher,
+            cycle=self.cycle,
+            criterion=self.criterion,
+            evidence_text="شاهد مرفوع من المعلم.",
+            submitted_by=self.teacher_user,
+        )
+        view = TeacherEvidenceViewSet.as_view({"get": "list"})
+        request = self.factory.get("/api/v1/evidences/")
+        force_authenticate(request, user=self.leader_user)
+        response = view(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)

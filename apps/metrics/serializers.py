@@ -18,9 +18,12 @@ class TeacherMetricSnapshotSerializer(serializers.ModelSerializer):
             "pd_hours",
             "plans_count",
             "created_by",
+            "approval_status",
+            "approved_by",
+            "approved_at",
             "created_at",
         ]
-        read_only_fields = ["id", "created_by", "created_at"]
+        read_only_fields = ["id", "created_by", "approval_status", "approved_by", "approved_at", "created_at"]
 
     def validate(self, attrs):
         request = self.context["request"]
@@ -28,6 +31,10 @@ class TeacherMetricSnapshotSerializer(serializers.ModelSerializer):
         cycle = attrs.get("cycle") or getattr(self.instance, "cycle", None)
         if teacher is None or cycle is None:
             raise serializers.ValidationError("teacher and cycle are required")
+        if request.user.role != request.user.Role.TEACHER:
+            raise serializers.ValidationError("Only teachers can submit metrics")
+        if teacher.user_id != request.user.id:
+            raise serializers.ValidationError("Teachers can only submit their own metrics")
         if not can_access_teacher(user=request.user, teacher=teacher):
             raise serializers.ValidationError("Not allowed to submit metrics for this teacher")
         if teacher.school_id != cycle.school_id:
@@ -46,10 +53,13 @@ class TeacherMetricSnapshotSerializer(serializers.ModelSerializer):
                 "pd_hours": validated_data["pd_hours"],
                 "plans_count": validated_data["plans_count"],
                 "created_by": request.user,
+                "approval_status": TeacherMetricSnapshot.ApprovalStatus.PENDING,
+                "approved_by": None,
+                "approved_at": None,
             },
         )
 
-        action = "metrics.created" if created else "metrics.updated"
+        action = "metrics.submitted" if created else "metrics.resubmitted"
         log_audit(
             actor=request.user,
             action=action,
