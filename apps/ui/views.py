@@ -932,6 +932,6 @@ def case_close_page(request: HttpRequest, case_id: int) -> HttpResponse:
     return render(request, "ui/case_close.html", {"case": case, "form": form})
 
 
-class PingView(LoginRequiredMixin, View):
+class PingView(View):
     def get(self, request: HttpRequest) -> HttpResponse:
         return HttpResponse("OK")
