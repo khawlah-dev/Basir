@@ -1,34 +1,99 @@
 {% extends "ui/base.html" %}
-{% block title %}الدرجات الموضوعية{% endblock %}
+{% block title %}توقع AI{% endblock %}
+{% block extra_head %}
+<style>
+  .ai-badge {
+    background: linear-gradient(120deg, #225473, #378C8C);
+    color: #F2F2F0;
+    border-radius: 12px;
+    padding: 0.3rem 0.8rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  .ai-detail {
+    background: rgba(55, 140, 140, 0.08);
+    border: 1px solid rgba(55, 140, 140, 0.2);
+    border-radius: 12px;
+    padding: 0.8rem 1rem;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .expand-btn {
+    cursor: pointer;
+    color: var(--accent-cool);
+    font-size: 0.85rem;
+    border: none;
+    background: none;
+    padding: 0;
+    text-decoration: underline;
+  }
+</style>
+{% endblock %}
 {% block content %}
-<h2 class="mb-3">الدرجات الموضوعية</h2>
-<div class="alert alert-warning py-2">
-  الدرجة الموضوعية في هذه النسخة جزئية وتعتمد فقط على ساعات التطوير المهني وعدد التحضيرات.
+<h2 class="mb-3">🤖 توقعات نموذج الذكاء الاصطناعي (ML) — استرشادي</h2>
+<div class="alert alert-info py-2">
+  هذه توقعات استرشادية مبنية على نموذج تعلّم آلي (ML) مُدرَّب على بيانات التقييمات السابقة.
 </div>
 
 <div class="card">
   <div class="card-body">
     <div class="table-responsive">
       <table class="table table-sm align-middle">
-        <thead><tr><th>المعلم</th><th>الدورة</th><th>الدرجة الكلية</th><th>نسخة السياسة</th><th>تاريخ الاحتساب</th><th></th></tr></thead>
+        <thead>
+          <tr>
+            <th>المعلم</th>
+            <th>الدورة</th>
+            <th>توقع ML</th>
+            <th>النموذج</th>
+            <th>التاريخ</th>
+            <th>التفاصيل</th>
+            <th></th>
+          </tr>
+        </thead>
         <tbody>
-        {% for row in scores %}
+          {% for row in scores %}
           <tr>
             <td>{{ row.teacher }}</td>
             <td>{{ row.cycle.name }}</td>
-            <td><strong>{{ row.objective_total }}</strong></td>
-            <td>{{ row.policy_version }}</td>
-            <td>{{ row.computed_at }}</td>
+            <td><span class="ai-badge">{{ row.objective_total }}</span></td>
+            <td><span class="badge text-bg-secondary">{{ row.policy_version }}</span></td>
+            <td>{{ row.computed_at|date:"Y-m-d H:i" }}</td>
+            <td>
+              <button class="expand-btn"
+                onclick="document.getElementById('detail-{{ row.id }}').classList.toggle('d-none')">
+                عرض التفاصيل ▾
+              </button>
+            </td>
             <td>
               <form method="post" action="{% url 'ui:objective-recompute' row.teacher_id row.cycle_id %}">
                 {% csrf_token %}
-                <button class="btn btn-outline-secondary btn-sm" type="submit">إعادة الاحتساب</button>
+                <button class="btn btn-outline-secondary btn-sm" type="submit">🔄 إعادة التوقع</button>
               </form>
             </td>
           </tr>
-        {% empty %}
-          <tr><td colspan="6" class="text-muted">لا توجد درجات موضوعية متاحة.</td></tr>
-        {% endfor %}
+          <tr id="detail-{{ row.id }}" class="d-none">
+            <td colspan="7">
+              <div class="ai-detail">
+                {% if row.breakdown_json.method == 'ML_MODEL' %}
+                <div><strong>الطريقة:</strong> نموذج ML ({{ row.breakdown_json.algorithm }})</div>
+                <div><strong>الإصدار:</strong> {{ row.breakdown_json.model_version }}</div>
+                <div class="text-muted mt-1">{{ row.breakdown_json.note }}</div>
+                {% elif row.breakdown_json.method == 'FORMULA_FALLBACK' %}
+                <div><strong>الطريقة:</strong> صيغة رياضية (احتياطي)</div>
+                <div class="text-muted mt-1">{{ row.breakdown_json.note }}</div>
+                {% else %}
+                <div class="text-muted">بيانات النموذج القديم.</div>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-muted">لا توجد توقعات متاحة.</td>
+          </tr>
+          {% endfor %}
         </tbody>
       </table>
     </div>

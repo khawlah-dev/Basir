@@ -9,7 +9,7 @@ class TeacherMetricSnapshot(models.Model):
     teacher = models.ForeignKey("teachers.Teacher", on_delete=models.CASCADE, related_name="metric_snapshots")
     cycle = models.ForeignKey("cycles.EvaluationCycle", on_delete=models.CASCADE, related_name="metric_snapshots")
     pd_hours = models.DecimalField(max_digits=7, decimal_places=2)
-    plans_count = models.PositiveIntegerField()
+    training_hours = models.DecimalField(max_digits=7, decimal_places=2)
     created_by = models.ForeignKey("accounts.User", null=True, on_delete=models.SET_NULL, related_name="metric_snapshots_created")
     approval_status = models.CharField(max_length=16, choices=ApprovalStatus.choices, default=ApprovalStatus.PENDING)
     approved_by = models.ForeignKey(
@@ -22,7 +22,7 @@ class TeacherMetricSnapshot(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["teacher", "cycle"], name="uq_metric_teacher_cycle"),
             models.CheckConstraint(check=models.Q(pd_hours__gte=0), name="ck_pd_hours_non_negative"),
-            models.CheckConstraint(check=models.Q(plans_count__gte=0), name="ck_plans_count_non_negative"),
+            models.CheckConstraint(check=models.Q(training_hours__gte=0), name="ck_training_hours_non_negative"),
         ]
         indexes = [
             models.Index(fields=["teacher", "cycle"]),

@@ -13,6 +13,8 @@ class ComparisonResult(models.Model):
     objective_total = models.DecimalField(max_digits=5, decimal_places=2)
     deviation = models.DecimalField(max_digits=6, decimal_places=2)
     deviation_level = models.CharField(max_length=16, choices=DeviationLevel.choices)
+    ml_expected_score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    ml_deviation = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
     created_at = models.DateTimeField(auto_now=True)
 
     class Meta:

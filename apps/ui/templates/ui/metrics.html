@@ -3,25 +3,25 @@
 {% block content %}
 <h2 class="mb-3">سجلات المؤشرات</h2>
 {% if is_teacher %}
-  <p class="text-muted">يمكنك إدخال أو تحديث سجلك، ثم ينتقل لحالة بانتظار اعتماد المدير.</p>
+<p class="text-muted">يمكنك إدخال أو تحديث سجلك، ثم ينتقل لحالة بانتظار اعتماد المدير.</p>
 {% else %}
-  <p class="text-muted">هذه الصفحة للمراجعة والاعتماد. إدخال سجلات المؤشرات متاح للمعلم فقط.</p>
+<p class="text-muted">هذه الصفحة للمراجعة والاعتماد. إدخال سجلات المؤشرات متاح للمعلم فقط.</p>
 {% endif %}
 <div class="row g-4">
   {% if form %}
-    <div class="col-lg-4">
-      <div class="card">
-        <div class="card-body">
-          <h5>إرسال سجل للمراجعة</h5>
-          <form method="post">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="submit_metric">
-            {{ form.as_p }}
-            <button class="btn btn-primary" type="submit">إرسال للمراجعة</button>
-          </form>
-        </div>
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-body">
+        <h5>إرسال سجل للمراجعة</h5>
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="submit_metric">
+          {{ form.as_p }}
+          <button class="btn btn-primary" type="submit">إرسال للمراجعة</button>
+        </form>
       </div>
     </div>
+  </div>
   {% endif %}
   <div class="{% if form %}col-lg-8{% else %}col-lg-12{% endif %}">
     <div class="card">
@@ -33,7 +33,7 @@
                 <th>المعلم</th>
                 <th>الدورة</th>
                 <th>ساعات التطوير</th>
-                <th>عدد التحضيرات</th>
+                <th>ساعات التدريب</th>
                 <th>الحالة</th>
                 <th>المعتمد</th>
                 <th>تاريخ الإدخال</th>
@@ -41,45 +41,48 @@
               </tr>
             </thead>
             <tbody>
-            {% for s in snapshots %}
+              {% for s in snapshots %}
               <tr>
                 <td>{{ s.teacher }}</td>
                 <td>{{ s.cycle.name }}</td>
                 <td>{{ s.pd_hours }}</td>
-                <td>{{ s.plans_count }}</td>
+                <td>{{ s.training_hours }}</td>
                 <td>
                   {% if s.approval_status == "APPROVED" %}
-                    <span class="badge text-bg-success">معتمد</span>
+                  <span class="badge text-bg-success">معتمد</span>
                   {% else %}
-                    <span class="badge text-bg-warning">بانتظار الاعتماد</span>
+                  <span class="badge text-bg-warning">بانتظار الاعتماد</span>
                   {% endif %}
                 </td>
                 <td>
                   {% if s.approved_by %}
-                    {{ s.approved_by.username }}<br><span class="small text-muted">{{ s.approved_at }}</span>
+                  {{ s.approved_by.username }}<br><span class="small text-muted">{{ s.approved_at }}</span>
                   {% else %}
-                    -
+                  -
                   {% endif %}
                 </td>
                 <td>{{ s.created_at }}</td>
                 {% if can_approve %}
-                  <td>
-                    {% if s.approval_status != "APPROVED" %}
-                      <form method="post">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="approve_metric">
-                        <input type="hidden" name="snapshot_id" value="{{ s.id }}">
-                        <button class="btn btn-sm btn-outline-primary" type="submit">اعتماد</button>
-                      </form>
-                    {% else %}
-                      <span class="text-muted">-</span>
-                    {% endif %}
-                  </td>
+                <td>
+                  {% if s.approval_status != "APPROVED" %}
+                  <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="approve_metric">
+                    <input type="hidden" name="snapshot_id" value="{{ s.id }}">
+                    <button class="btn btn-sm btn-outline-primary" type="submit">اعتماد</button>
+                  </form>
+                  {% else %}
+                  <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
                 {% endif %}
               </tr>
-            {% empty %}
-              <tr><td colspan="{% if can_approve %}8{% else %}7{% endif %}" class="text-muted">لا توجد سجلات مؤشرات حتى الآن.</td></tr>
-            {% endfor %}
+              {% empty %}
+              <tr>
+                <td colspan="{% if can_approve %}8{% else %}7{% endif %}" class="text-muted">لا توجد سجلات مؤشرات حتى
+                  الآن.</td>
+              </tr>
+              {% endfor %}
             </tbody>
           </table>
         </div>

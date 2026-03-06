@@ -2,7 +2,8 @@
 {% block title %}درجات المعايير{% endblock %}
 {% block content %}
 <h2 class="mb-3">إدخال درجات المعايير</h2>
-<p class="text-muted">المعلم: <strong>{{ evaluation.teacher }}</strong> | الفصل الدراسي: <strong>{{ evaluation.cycle.name }}</strong></p>
+<p class="text-muted">المعلم: <strong>{{ evaluation.teacher }}</strong> | الفصل الدراسي: <strong>{{
+    evaluation.cycle.name }}</strong></p>
 <div class="mb-3 d-flex gap-2 flex-wrap">
   <span class="badge text-bg-secondary">1. مراجعة الشواهد</span>
   <span class="badge text-bg-warning">2. إدخال الدرجات (الحالي)</span>
@@ -10,36 +11,80 @@
   <span class="badge text-bg-secondary">4. مراجعة المقارنة</span>
 </div>
 
+
+{% if ml_prediction %}
+<div class="card mb-4 border-success">
+  <div class="card-header bg-success text-white fw-bold">
+    <i class="bi bi-graph-up-arrow"></i> توقعات نموذج الذكاء الاصطناعي (ML) — استرشادي
+  </div>
+  <div class="card-body bg-light">
+    <div class="row align-items-center">
+      <div class="col-md-4 text-center mb-3 mb-md-0">
+        <h5 class="text-success mb-1">الدرجة المتوقعة</h5>
+        <span class="badge bg-success fs-4 px-4 py-2">{{ ml_prediction.ml_expected_score }} / 100</span>
+      </div>
+      <div class="col-md-8">
+        <div class="row">
+          <div class="col-6">
+            <div class="small text-muted">النموذج المستخدم</div>
+            <div class="fw-semibold">{{ ml_prediction.model_record.get_algorithm_display }}</div>
+          </div>
+          <div class="col-6">
+            <div class="small text-muted">إصدار النموذج</div>
+            <div class="fw-semibold">{{ ml_prediction.model_record.version }}</div>
+          </div>
+        </div>
+        <div class="row mt-2">
+          <div class="col-6">
+            <div class="small text-muted">عدد عينات التدريب</div>
+            <div class="fw-semibold">{{ ml_prediction.model_record.sample_count }}</div>
+          </div>
+          <div class="col-6">
+            <div class="small text-muted">متوسط الخطأ (MAE)</div>
+            <div class="fw-semibold">{{ ml_prediction.model_record.metrics_json.mae }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <hr>
+    <div class="text-muted small"><i class="bi bi-info-circle"></i> هذه الدرجة استرشادية مبنية على نموذج تعلم آلي ({{
+      ml_prediction.model_record.get_algorithm_display }}) مدرّب على التقييمات السابقة. الهدف مساعدة المدير في اتخاذ
+      القرار قبل الاعتماد النهائي.</div>
+  </div>
+</div>
+{% endif %}
+
+
 <div class="card">
   <div class="card-body">
     <form method="post">
       {% csrf_token %}
       {% for row in criterion_rows %}
-        {% with field=row.field %}
-        <div class="mb-3">
-          <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-          {{ field }}
-          {% if field.errors %}<div class="text-danger small">{{ field.errors|striptags }}</div>{% endif %}
-          <div class="mt-2 border rounded p-2 bg-light">
-            <div class="fw-semibold small mb-1">شواهد المعلم لهذا العنصر:</div>
-            {% for evidence in row.evidences %}
-              <div class="small mb-1">
-                - {{ evidence.evidence_text }}
-                {% if evidence.attachments.all %}
-                  <div class="mt-1">
-                    {% for attachment in evidence.attachments.all %}
-                      <a href="{{ attachment.file.url }}" target="_blank" rel="noopener">{{ attachment.filename }}</a>{% if not forloop.last %} | {% endif %}
-                    {% endfor %}
-                  </div>
-                {% endif %}
-                <span class="text-muted">({{ evidence.created_at }})</span>
-              </div>
-            {% empty %}
-              <div class="small text-muted">لا توجد شواهد مضافة لهذا العنصر.</div>
-            {% endfor %}
+      {% with field=row.field %}
+      <div class="mb-3">
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<div class="text-danger small">{{ field.errors|striptags }}</div>{% endif %}
+        <div class="mt-2 border rounded p-2 bg-light">
+          <div class="fw-semibold small mb-1">شواهد المعلم لهذا العنصر:</div>
+          {% for evidence in row.evidences %}
+          <div class="small mb-1">
+            - {{ evidence.evidence_text }}
+            {% if evidence.attachments.all %}
+            <div class="mt-1">
+              {% for attachment in evidence.attachments.all %}
+              <a href="{{ attachment.file.url }}" target="_blank" rel="noopener">{{ attachment.filename }}</a>{% if not forloop.last %} | {% endif %}
+              {% endfor %}
+            </div>
+            {% endif %}
+            <span class="text-muted">({{ evidence.created_at }})</span>
           </div>
+          {% empty %}
+          <div class="small text-muted">لا توجد شواهد مضافة لهذا العنصر.</div>
+          {% endfor %}
         </div>
-        {% endwith %}
+      </div>
+      {% endwith %}
       {% endfor %}
       <div class="d-flex gap-2">
         <button class="btn btn-primary" type="submit">حفظ الدرجات</button>

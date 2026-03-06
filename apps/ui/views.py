@@ -405,7 +405,7 @@ def metrics_page(request: HttpRequest) -> HttpResponse:
                         cycle=data["cycle"],
                         defaults={
                             "pd_hours": data["pd_hours"],
-                            "plans_count": data["plans_count"],
+                            "training_hours": data["training_hours"],
                             "created_by": request.user,
                             "approval_status": TeacherMetricSnapshot.ApprovalStatus.PENDING,
                             "approved_by": None,
@@ -421,7 +421,7 @@ def metrics_page(request: HttpRequest) -> HttpResponse:
                             "teacher_id": obj.teacher_id,
                             "cycle_id": obj.cycle_id,
                             "pd_hours": str(obj.pd_hours),
-                            "plans_count": obj.plans_count,
+                            "training_hours": str(obj.training_hours),
                         },
                     )
                 messages.success(request, "تم إرسال سجل المؤشرات للمراجعة والاعتماد.")
@@ -608,7 +608,7 @@ def objective_recompute(request: HttpRequest, teacher_id: int, cycle_id: int) ->
 
     try:
         compute_objective_score(teacher=teacher, cycle=snapshot.cycle, actor=request.user)
-        messages.success(request, "تمت إعادة احتساب الدرجة الموضوعية الجزئية.")
+        messages.success(request, "تم إعادة حساب توقع نموذج ML.")
     except ValidationError as exc:
         messages.error(request, str(exc))
     return redirect("ui:objective-scores")
@@ -734,10 +734,21 @@ def evaluation_items_page(request: HttpRequest, evaluation_id: int) -> HttpRespo
             }
         )
 
+    try:
+        from apps.ml_scoring.prediction import get_or_predict as ml_get_or_predict
+        ml_prediction = ml_get_or_predict(teacher=evaluation.teacher, cycle=evaluation.cycle)
+    except Exception:
+        ml_prediction = None
+
     return render(
         request,
         "ui/evaluation_items.html",
-        {"evaluation": evaluation, "form": form, "criterion_rows": criterion_rows},
+        {
+            "evaluation": evaluation,
+            "form": form,
+            "criterion_rows": criterion_rows,
+            "ml_prediction": ml_prediction,
+        },
     )
 
 
@@ -760,7 +771,7 @@ def evaluation_finalize(request: HttpRequest, evaluation_id: int) -> HttpRespons
             finalize_evaluation(evaluation, actor=request.user)
             compute_objective_score(teacher=evaluation.teacher, cycle=evaluation.cycle, actor=request.user)
             compare_scores_and_generate_flags(teacher=evaluation.teacher, cycle=evaluation.cycle, actor=request.user)
-        messages.success(request, "تم اعتماد التقييم واحتساب الدرجة الموضوعية الجزئية وإكمال المقارنة.")
+        messages.success(request, "تم اعتماد التقييم وحساب توقع ML وإكمال المقارنة.")
     except ValidationError as exc:
         messages.error(request, str(exc))
 
@@ -935,3 +946,13 @@ def case_close_page(request: HttpRequest, case_id: int) -> HttpResponse:
 class PingView(View):
     def get(self, request: HttpRequest) -> HttpResponse:
         return HttpResponse("OK")
+
+
+@login_required
+def profile_page(request):
+    teacher_profile = None
+    try:
+        teacher_profile = request.user.teacher_profile
+    except Exception:
+        pass
+    return render(request, "ui/profile.html", {"teacher_profile": teacher_profile})

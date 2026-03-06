@@ -1,0 +1,168 @@
+{% extends "ui/base.html" %}
+{% block title %}ملف المستخدم{% endblock %}
+{% block extra_head %}
+<style>
+    .profile-hero {
+        background: linear-gradient(135deg, rgba(23, 48, 64, 0.97), rgba(34, 84, 115, 0.95) 55%, rgba(55, 140, 140, 0.9));
+        border-radius: 22px;
+        padding: 2rem 2rem 1.5rem;
+        color: #fff;
+        box-shadow: 0 16px 30px rgba(0, 0, 0, 0.34);
+        border: 1px solid rgba(212, 251, 255, 0.45);
+        text-align: center;
+    }
+
+    .profile-avatar {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #378C8C, #D4FBFF);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.4rem;
+        font-weight: 800;
+        color: #173040;
+        margin-bottom: 0.8rem;
+        border: 3px solid rgba(212, 251, 255, 0.6);
+    }
+
+    .profile-hero h2 {
+        color: #fff;
+        margin-bottom: 0.2rem;
+    }
+
+    .profile-role-badge {
+        background: rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: #fff;
+        border-radius: 999px;
+        padding: 0.3rem 1rem;
+        font-weight: 700;
+        display: inline-block;
+        margin-top: 0.4rem;
+    }
+
+    .info-card {
+        border-radius: 18px;
+        overflow: hidden;
+    }
+
+    .info-card .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.85rem 1.2rem;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .info-card .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        color: var(--text-muted);
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .info-value {
+        color: var(--text-main);
+        font-weight: 700;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+
+        <div class="profile-hero mb-4">
+            <div class="profile-avatar">
+                {{ request.user.first_name|first|default:request.user.username|first|upper }}
+            </div>
+            <h2>{{ request.user.get_full_name|default:request.user.username }}</h2>
+            <div class="text-white-50 small">{{ request.user.email|default:"—" }}</div>
+            <div class="profile-role-badge mt-2">
+                {% if request.user.role == 'TEACHER' %}معلم
+                {% elif request.user.role == 'LEADER' %}مدير
+                {% elif request.user.role == 'ADMIN' %}مدير نظام
+                {% else %}{{ request.user.role }}{% endif %}
+            </div>
+        </div>
+
+        <div class="card info-card mb-4">
+            <div class="card-body p-0">
+                <h6 class="px-3 pt-3 pb-2 mb-0">معلومات الحساب</h6>
+                <div class="info-row">
+                    <span class="info-label">اسم المستخدم</span>
+                    <span class="info-value">{{ request.user.username }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">الاسم الأول</span>
+                    <span class="info-value">{{ request.user.first_name|default:"—" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">اسم العائلة</span>
+                    <span class="info-value">{{ request.user.last_name|default:"—" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">البريد الإلكتروني</span>
+                    <span class="info-value" dir="ltr">{{ request.user.email|default:"—" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">الدور</span>
+                    <span class="info-value">
+                        {% if request.user.role == 'TEACHER' %}معلم
+                        {% elif request.user.role == 'LEADER' %}مدير
+                        {% elif request.user.role == 'ADMIN' %}مدير نظام
+                        {% else %}{{ request.user.role }}{% endif %}
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">المدرسة</span>
+                    <span class="info-value">{{ request.user.school.name|default:"غير محدد" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">تاريخ الانضمام</span>
+                    <span class="info-value">{{ request.user.date_joined|date:"Y-m-d" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">آخر تسجيل دخول</span>
+                    <span class="info-value">{{ request.user.last_login|date:"Y-m-d H:i"|default:"—" }}</span>
+                </div>
+            </div>
+        </div>
+
+        {% if teacher_profile %}
+        <div class="card info-card mb-4">
+            <div class="card-body p-0">
+                <h6 class="px-3 pt-3 pb-2 mb-0">بيانات المعلم</h6>
+                <div class="info-row">
+                    <span class="info-label">الرقم الوظيفي</span>
+                    <span class="info-value">{{ teacher_profile.employee_id }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">المدرسة</span>
+                    <span class="info-value">{{ teacher_profile.school.name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">الحالة</span>
+                    <span class="info-value">
+                        {% if teacher_profile.is_active %}
+                        <span class="badge text-bg-success">نشط</span>
+                        {% else %}
+                        <span class="badge text-bg-danger">غير نشط</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">تاريخ الإنشاء</span>
+                    <span class="info-value">{{ teacher_profile.created_at|date:"Y-m-d" }}</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

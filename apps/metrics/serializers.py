@@ -16,7 +16,7 @@ class TeacherMetricSnapshotSerializer(serializers.ModelSerializer):
             "teacher",
             "cycle",
             "pd_hours",
-            "plans_count",
+            "training_hours",
             "created_by",
             "approval_status",
             "approved_by",
@@ -51,7 +51,7 @@ class TeacherMetricSnapshotSerializer(serializers.ModelSerializer):
             cycle=cycle,
             defaults={
                 "pd_hours": validated_data["pd_hours"],
-                "plans_count": validated_data["plans_count"],
+                "training_hours": validated_data["training_hours"],
                 "created_by": request.user,
                 "approval_status": TeacherMetricSnapshot.ApprovalStatus.PENDING,
                 "approved_by": None,
@@ -69,7 +69,7 @@ class TeacherMetricSnapshotSerializer(serializers.ModelSerializer):
                 "teacher_id": obj.teacher_id,
                 "cycle_id": obj.cycle_id,
                 "pd_hours": str(obj.pd_hours),
-                "plans_count": obj.plans_count,
+                "training_hours": str(obj.training_hours),
             },
         )
         return obj

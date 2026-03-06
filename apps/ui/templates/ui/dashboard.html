@@ -22,9 +22,6 @@
     color: #fff;
   }
 
-  .scope-note {
-    border-right: 5px solid #FFEDD4;
-  }
 
   .kpi-grid .card {
     overflow: hidden;
@@ -48,403 +45,468 @@
     <h2>{{ request.user.get_full_name|default:request.user.username }}</h2>
     <div class="small">
       {% if request.user.role == 'TEACHER' %}
-        المعلم
+      المعلم
       {% elif request.user.role == 'LEADER' %}
-        المدير
+      المدير
       {% elif request.user.role == 'ADMIN' %}
-        مدير النظام
+      مدير النظام
       {% else %}
-        {{ request.user.role }}
+      {{ request.user.role }}
       {% endif %}
     </div>
   </div>
   <span class="badge">
     {% if request.user.role == 'TEACHER' %}
-      حساب معلم
+    حساب معلم
     {% elif request.user.role == 'LEADER' %}
-      حساب مدير
+    حساب مدير
     {% elif request.user.role == 'ADMIN' %}
-      حساب مدير نظام
+    حساب مدير نظام
     {% else %}
-      {{ request.user.role }}
+    {{ request.user.role }}
     {% endif %}
   </span>
 </div>
 
-<div class="alert alert-warning scope-note">
-  <strong>نطاق الدرجة الموضوعية:</strong>
-  هذه درجة موضوعية جزئية محسوبة فقط من <code>pd_hours</code> و <code>plans_count</code>.
-</div>
 
 {% if manager_dashboard %}
-  <div class="card mb-3 border-0 bg-light">
-    <div class="card-body">
-      <h5 class="mb-3">مسار العمل المعتمد</h5>
-      <div class="d-flex gap-2 flex-wrap">
-        <span class="badge text-bg-secondary">1. مراجعة الشواهد</span>
-        <span class="badge text-bg-secondary">2. إدخال الدرجات</span>
-        <span class="badge text-bg-secondary">3. اعتماد التقييم</span>
-        <span class="badge text-bg-secondary">4. مراجعة المقارنة</span>
+
+<div class="row g-3 mb-4 kpi-grid">
+  <div class="col-md-3">
+    <div class="card">
+      <div class="card-body">
+        <h6>عدد المعلمين</h6>
+        <h3>{{ manager_dashboard.total_teachers }}</h3>
       </div>
     </div>
   </div>
-
-  <div class="row g-3 mb-4 kpi-grid">
-    <div class="col-md-3"><div class="card"><div class="card-body"><h6>عدد المعلمين</h6><h3>{{ manager_dashboard.total_teachers }}</h3></div></div></div>
-    <div class="col-md-3"><div class="card"><div class="card-body"><h6>قيد الإدخال</h6><h3>{{ manager_dashboard.draft_count }}</h3></div></div></div>
-    <div class="col-md-2"><div class="card"><div class="card-body"><h6>معتمد</h6><h3>{{ manager_dashboard.final_count }}</h3></div></div></div>
-    <div class="col-md-2"><div class="card"><div class="card-body"><h6>مراجعة</h6><h3>{{ manager_dashboard.review_count }}</h3></div></div></div>
-    <div class="col-md-2"><div class="card"><div class="card-body"><h6>مخاطرة عالية</h6><h3>{{ manager_dashboard.high_risk_count }}</h3></div></div></div>
-  </div>
-
-  <div class="card mb-3">
-    <div class="card-body">
-      <form method="get" class="row g-2 align-items-end">
-        <div class="col-md-5">
-          <label class="form-label">الفصل الدراسي</label>
-          <select class="form-select" name="cycle_id">
-            {% for cycle in manager_dashboard.cycles %}
-              <option value="{{ cycle.id }}" {% if manager_dashboard.selected_cycle_id == cycle.id|stringformat:"s" %}selected{% endif %}>
-                {{ cycle.name }} - {{ cycle.school.name }}
-              </option>
-            {% empty %}
-              <option value="">لا توجد فصول دراسية</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="col-md-5">
-          <label class="form-label">بحث عن معلم</label>
-          <input class="form-control" type="text" name="q" value="{{ manager_dashboard.search_text }}" placeholder="اسم المستخدم/الاسم/الرقم الوظيفي">
-        </div>
-        <div class="col-md-2 d-grid">
-          <button class="btn btn-primary" type="submit">تطبيق</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <div class="row g-3 mb-3">
-    <div class="col-lg-4">
-      <div class="card h-100">
-        <div class="card-body">
-          <h6 class="mb-3">توزيع مستوى المعلمين</h6>
-          <canvas id="teacherLevelChart" height="220"></canvas>
-        </div>
-      </div>
-    </div>
-    <div class="col-lg-8">
-      <div class="card h-100">
-        <div class="card-body">
-          <h6 class="mb-3">أفضل 7 معلمين (بحسب درجة المدير)</h6>
-          <canvas id="topTeachersChart" height="220"></canvas>
-        </div>
+  <div class="col-md-3">
+    <div class="card">
+      <div class="card-body">
+        <h6>قيد الإدخال</h6>
+        <h3>{{ manager_dashboard.draft_count }}</h3>
       </div>
     </div>
   </div>
-
-  <div class="row g-3 mb-3">
-    <div class="col-lg-5">
-      <div class="card h-100">
-        <div class="card-body">
-          <h6 class="mb-3">قائمة أفضل 7</h6>
-          <div class="table-responsive">
-            <table class="table table-sm align-middle">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>المعلم</th>
-                  <th>درجة المدير</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for row in manager_dashboard.top_teachers %}
-                  <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ row.teacher }}</td>
-                    <td><span class="badge text-bg-primary">{{ row.manager_total|floatformat:2 }}</span></td>
-                  </tr>
-                {% empty %}
-                  <tr><td colspan="3" class="text-muted">لا توجد تقييمات نهائية كافية لعرض القائمة.</td></tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="col-lg-7">
-      <div class="card h-100">
-        <div class="card-body">
-          <h6 class="mb-3">أحدث الشواهد المرفوعة</h6>
-          <div class="table-responsive">
-            <table class="table table-sm align-middle">
-              <thead>
-                <tr>
-                  <th>المعلم</th>
-                  <th>عنصر التقييم</th>
-                  <th>الوصف</th>
-                  <th>المرفقات</th>
-                  <th>التاريخ</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for evidence in manager_dashboard.recent_evidences %}
-                  <tr>
-                    <td>{{ evidence.teacher }}</td>
-                    <td>{{ evidence.criterion.name }}</td>
-                    <td>{{ evidence.evidence_text|truncatechars:65 }}</td>
-                    <td><span class="badge text-bg-info">{{ evidence.attachments_total }}</span></td>
-                    <td>{{ evidence.created_at|date:"Y-m-d H:i" }}</td>
-                  </tr>
-                {% empty %}
-                  <tr><td colspan="5" class="text-muted">لا توجد شواهد مرفوعة حديثًا ضمن الفصل المختار.</td></tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        </div>
+  <div class="col-md-2">
+    <div class="card">
+      <div class="card-body">
+        <h6>معتمد</h6>
+        <h3>{{ manager_dashboard.final_count }}</h3>
       </div>
     </div>
   </div>
+  <div class="col-md-2">
+    <div class="card">
+      <div class="card-body">
+        <h6>مراجعة</h6>
+        <h3>{{ manager_dashboard.review_count }}</h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card">
+      <div class="card-body">
+        <h6>مخاطرة عالية</h6>
+        <h3>{{ manager_dashboard.high_risk_count }}</h3>
+      </div>
+    </div>
+  </div>
+</div>
 
-  <div class="card">
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table table-sm align-middle">
-          <thead>
-            <tr>
-              <th>المعلم</th>
-              <th>جاهزية البيانات</th>
-              <th>حالة التقييم</th>
-              <th>الانحراف</th>
-              <th>الخطوة الحالية</th>
-              <th>الإجراءات</th>
-            </tr>
-          </thead>
-          <tbody>
-          {% for row in manager_dashboard.rows %}
-            <tr>
-              <td>
-                <div><strong>{{ row.teacher }}</strong></div>
-                <div class="text-muted small">{{ row.teacher.school.name }} | {{ row.teacher.employee_id }}</div>
-              </td>
-              <td>
-                <div class="small">
-                  المؤشرات:
-                  {% if row.has_metrics %}<span class="badge text-bg-success">معتمدة</span>{% else %}<span class="badge text-bg-secondary">غير معتمدة</span>{% endif %}
-                  {% if row.has_pending_metrics %}<span class="badge text-bg-warning">بانتظار الاعتماد</span>{% endif %}
-                </div>
-                <div class="small mt-1">
-                  الشواهد: <span class="badge text-bg-info">{{ row.evidence_count }}</span>
-                </div>
-                <div class="small mt-1">
-                  الدرجة الموضوعية:
-                  {% if row.has_objective %}<span class="badge text-bg-success">جاهزة</span>{% else %}<span class="badge text-bg-secondary">غير محتسبة</span>{% endif %}
-                </div>
-              </td>
-              <td><span class="badge text-bg-{{ row.evaluation_badge }}">{{ row.evaluation_state }}</span></td>
-              <td>
-                <span class="badge text-bg-{{ row.deviation_badge }}">{{ row.deviation_label }}</span>
-                {% if row.comparison %}
-                  <div class="small text-muted mt-1">{{ row.comparison.deviation }}</div>
-                {% endif %}
-              </td>
-              <td><span class="badge text-bg-light">{{ row.workflow_step }}</span></td>
-              <td>
-                <div class="d-flex gap-2 flex-wrap">
-                  {% if row.action_mode == 'start' %}
-                    <form method="post" action="{% url 'ui:evaluation-start' row.teacher.id %}">
-                      {% csrf_token %}
-                      <input type="hidden" name="cycle_id" value="{{ manager_dashboard.selected_cycle_id }}">
-                      <button class="btn btn-primary btn-sm" type="submit">بدء التقييم</button>
-                    </form>
-                  {% elif row.action_mode == 'resume' %}
-                    <a class="btn btn-primary btn-sm" href="{% url 'ui:evaluation-items' row.evaluation.id %}">استكمال التقييم</a>
-                  {% elif row.action_mode == 'no_cycle' %}
-                    <a class="btn btn-warning btn-sm" href="{% url 'ui:semesters-manage' %}">إضافة فصل دراسي</a>
-                  {% else %}
-                    <a class="btn btn-outline-secondary btn-sm" href="{% url 'ui:evaluations' %}">عرض التقييمات</a>
-                  {% endif %}
-                  <a class="btn btn-outline-info btn-sm" href="{{ row.review_evidence_url }}">مراجعة الشواهد</a>
-                  <a class="btn btn-outline-dark btn-sm" href="{{ row.comparison_url }}">عرض المقارنة</a>
-                </div>
-              </td>
-            </tr>
+<div class="card mb-3">
+  <div class="card-body">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-5">
+        <label class="form-label">الفصل الدراسي</label>
+        <select class="form-select" name="cycle_id">
+          {% for cycle in manager_dashboard.cycles %}
+          <option value="{{ cycle.id }}" {% if manager_dashboard.selected_cycle_id == cycle.id|stringformat:"s" %}selected{% endif %}>{{ cycle.name }} - {{ cycle.school.name }}</option>
           {% empty %}
-            <tr><td colspan="6" class="text-muted">لا يوجد معلمون ضمن الفلترة الحالية.</td></tr>
+          <option value="">لا توجد فصول دراسية</option>
           {% endfor %}
-          </tbody>
-        </table>
+        </select>
+      </div>
+      <div class="col-md-5">
+        <label class="form-label">بحث عن معلم</label>
+        <input class="form-control" type="text" name="q" value="{{ manager_dashboard.search_text }}"
+          placeholder="اسم المستخدم/الاسم/الرقم الوظيفي">
+      </div>
+      <div class="col-md-2 d-grid">
+        <button class="btn btn-primary" type="submit">تطبيق</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="mb-3">توزيع مستوى المعلمين</h6>
+        <canvas id="teacherLevelChart" height="220"></canvas>
       </div>
     </div>
   </div>
-{% else %}
-  <div class="row g-3 mb-4">
-    <div class="col-md-4"><div class="card"><div class="card-body"><h6>سجلات المؤشرات</h6><h3>{{ metrics_count }}</h3></div></div></div>
-    <div class="col-md-4"><div class="card"><div class="card-body"><h6>الدرجات الموضوعية</h6><h3>{{ objectives_count }}</h3></div></div></div>
-    <div class="col-md-4"><div class="card"><div class="card-body"><h6>تقييمات المدير</h6><h3>{{ evaluations_count }}</h3></div></div></div>
-    <div class="col-md-6"><div class="card"><div class="card-body"><h6>المقارنات</h6><h3>{{ comparisons_count }}</h3></div></div></div>
-    <div class="col-md-6"><div class="card"><div class="card-body"><h6>الحالات المفتوحة</h6><h3>{{ open_cases_count }}</h3></div></div></div>
+  <div class="col-lg-8">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="mb-3">أفضل 7 معلمين (بحسب درجة المدير)</h6>
+        <canvas id="topTeachersChart" height="220"></canvas>
+      </div>
+    </div>
   </div>
+</div>
 
-  <div class="d-flex gap-2 flex-wrap">
-    <a class="btn btn-outline-primary" href="{% url 'ui:metrics' %}">إدارة المؤشرات</a>
-    <a class="btn btn-outline-primary" href="{% url 'ui:objective-scores' %}">عرض الدرجات الموضوعية</a>
-    <a class="btn btn-outline-primary" href="{% url 'ui:comparisons' %}">عرض المقارنات</a>
-  </div>
-
-  {% if request.user.role == 'TEACHER' %}
-    <hr class="my-4">
-    <h4 class="mb-3">رفع الشواهد من لوحة التحكم</h4>
-    {% if teacher_profile_missing %}
-      <div class="alert alert-danger">لا يمكن رفع الشواهد لأن الحساب غير مرتبط بملف معلم.</div>
-    {% else %}
-      <div class="row g-4">
-        <div class="col-lg-5">
-          <div class="card">
-            <div class="card-body">
-              {% if current_semester %}
-                <div class="alert alert-info py-2">الفصل الدراسي الحالي: <strong>{{ current_semester.name }}</strong></div>
-              {% else %}
-                <div class="alert alert-warning py-2">لا يوجد فصل دراسي نشط حالياً. يجب على المدير إضافة فصل دراسي أولاً.</div>
-              {% endif %}
-              <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="quick_evidence">
-                {{ quick_evidence_form.as_p }}
-                <button class="btn btn-primary" type="submit">رفع الشاهد</button>
-                <a class="btn btn-outline-secondary" href="{% url 'ui:evidences' %}">إدارة الشواهد</a>
-              </form>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-7">
-          <div class="card">
-            <div class="card-body">
-              <h6 class="mb-3">أحدث الشواهد</h6>
-              <div class="table-responsive">
-                <table class="table table-sm align-middle">
-                  <thead>
-                    <tr>
-                      <th>الفصل الدراسي</th>
-                      <th>عنصر التقييم</th>
-                      <th>وصف الشاهد</th>
-                      <th>عدد المرفقات</th>
-                      <th>التاريخ</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for evidence in recent_evidences %}
-                      <tr>
-                        <td>{{ evidence.cycle.name }}</td>
-                        <td>{{ evidence.criterion.name }}</td>
-                        <td>{{ evidence.evidence_text|truncatechars:90 }}</td>
-                        <td>{{ evidence.attachments.count }}</td>
-                        <td>{{ evidence.created_at }}</td>
-                      </tr>
-                    {% empty %}
-                      <tr><td colspan="5" class="text-muted">لا توجد شواهد مرفوعة بعد.</td></tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+<div class="row g-3 mb-3">
+  <div class="col-lg-5">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="mb-3">قائمة أفضل 7</h6>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>المعلم</th>
+                <th>درجة المدير</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in manager_dashboard.top_teachers %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ row.teacher }}</td>
+                <td><span class="badge text-bg-primary">{{ row.manager_total|floatformat:2 }}</span></td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="3" class="text-muted">لا توجد تقييمات نهائية كافية لعرض القائمة.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
       </div>
-    {% endif %}
-  {% endif %}
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="mb-3">أحدث الشواهد المرفوعة</h6>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead>
+              <tr>
+                <th>المعلم</th>
+                <th>عنصر التقييم</th>
+                <th>الوصف</th>
+                <th>المرفقات</th>
+                <th>التاريخ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for evidence in manager_dashboard.recent_evidences %}
+              <tr>
+                <td>{{ evidence.teacher }}</td>
+                <td>{{ evidence.criterion.name }}</td>
+                <td>{{ evidence.evidence_text|truncatechars:65 }}</td>
+                <td><span class="badge text-bg-info">{{ evidence.attachments_total }}</span></td>
+                <td>{{ evidence.created_at|date:"Y-m-d H:i" }}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="5" class="text-muted">لا توجد شواهد مرفوعة حديثًا ضمن الفصل المختار.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-sm align-middle">
+        <thead>
+          <tr>
+            <th>المعلم</th>
+            <th>جاهزية البيانات</th>
+            <th>حالة التقييم</th>
+            <th>الانحراف</th>
+            <th>الخطوة الحالية</th>
+            <th>الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in manager_dashboard.rows %}
+          <tr>
+            <td>
+              <div><strong>{{ row.teacher }}</strong></div>
+              <div class="text-muted small">{{ row.teacher.school.name }} | {{ row.teacher.employee_id }}</div>
+            </td>
+            <td>
+              <div class="small">
+                المؤشرات:
+                {% if row.has_metrics %}<span class="badge text-bg-success">معتمدة</span>{% else %}<span
+                  class="badge text-bg-secondary">غير معتمدة</span>{% endif %}
+                {% if row.has_pending_metrics %}<span class="badge text-bg-warning">بانتظار الاعتماد</span>{% endif %}
+              </div>
+              <div class="small mt-1">
+                الشواهد: <span class="badge text-bg-info">{{ row.evidence_count }}</span>
+              </div>
+              <div class="small mt-1">
+                توقع AI:
+                {% if row.has_objective %}<span class="badge text-bg-success">جاهزة</span>{% else %}<span
+                  class="badge text-bg-secondary">غير محتسبة</span>{% endif %}
+              </div>
+            </td>
+            <td><span class="badge text-bg-{{ row.evaluation_badge }}">{{ row.evaluation_state }}</span></td>
+            <td>
+              <span class="badge text-bg-{{ row.deviation_badge }}">{{ row.deviation_label }}</span>
+              {% if row.comparison %}
+              <div class="small text-muted mt-1">{{ row.comparison.deviation }}</div>
+              {% endif %}
+            </td>
+            <td><span class="badge text-bg-light">{{ row.workflow_step }}</span></td>
+            <td>
+              <div class="d-flex gap-2 flex-wrap">
+                {% if row.action_mode == 'start' %}
+                <form method="post" action="{% url 'ui:evaluation-start' row.teacher.id %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="cycle_id" value="{{ manager_dashboard.selected_cycle_id }}">
+                  <button class="btn btn-primary btn-sm" type="submit">بدء التقييم</button>
+                </form>
+                {% elif row.action_mode == 'resume' %}
+                <a class="btn btn-primary btn-sm" href="{% url 'ui:evaluation-items' row.evaluation.id %}">استكمال
+                  التقييم</a>
+                {% elif row.action_mode == 'no_cycle' %}
+                <a class="btn btn-warning btn-sm" href="{% url 'ui:semesters-manage' %}">إضافة فصل دراسي</a>
+                {% else %}
+                <a class="btn btn-outline-secondary btn-sm" href="{% url 'ui:evaluations' %}">عرض التقييمات</a>
+                {% endif %}
+                <a class="btn btn-outline-info btn-sm" href="{{ row.review_evidence_url }}">مراجعة الشواهد</a>
+                <a class="btn btn-outline-dark btn-sm" href="{{ row.comparison_url }}">عرض المقارنة</a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="text-muted">لا يوجد معلمون ضمن الفلترة الحالية.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h6>سجلات المؤشرات</h6>
+        <h3>{{ metrics_count }}</h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h6>توقع AI</h6>
+        <h3>{{ objectives_count }}</h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h6>تقييمات المدير</h6>
+        <h3>{{ evaluations_count }}</h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <h6>المقارنات</h6>
+        <h3>{{ comparisons_count }}</h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <h6>الحالات المفتوحة</h6>
+        <h3>{{ open_cases_count }}</h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="d-flex gap-2 flex-wrap">
+  <a class="btn btn-outline-primary" href="{% url 'ui:metrics' %}">إدارة المؤشرات</a>
+  <a class="btn btn-outline-primary" href="{% url 'ui:objective-scores' %}">عرض توقع AI</a>
+  <a class="btn btn-outline-primary" href="{% url 'ui:comparisons' %}">عرض المقارنات</a>
+</div>
+
+{% if request.user.role == 'TEACHER' %}
+<hr class="my-4">
+<h4 class="mb-3">رفع الشواهد من لوحة التحكم</h4>
+{% if teacher_profile_missing %}
+<div class="alert alert-danger">لا يمكن رفع الشواهد لأن الحساب غير مرتبط بملف معلم.</div>
+{% else %}
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-body">
+        {% if current_semester %}
+        <div class="alert alert-info py-2">الفصل الدراسي الحالي: <strong>{{ current_semester.name }}</strong></div>
+        {% else %}
+        <div class="alert alert-warning py-2">لا يوجد فصل دراسي نشط حالياً. يجب على المدير إضافة فصل دراسي أولاً.</div>
+        {% endif %}
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="quick_evidence">
+          {{ quick_evidence_form.as_p }}
+          <button class="btn btn-primary" type="submit">رفع الشاهد</button>
+          <a class="btn btn-outline-secondary" href="{% url 'ui:evidences' %}">إدارة الشواهد</a>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-body">
+        <h6 class="mb-3">أحدث الشواهد</h6>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead>
+              <tr>
+                <th>الفصل الدراسي</th>
+                <th>عنصر التقييم</th>
+                <th>وصف الشاهد</th>
+                <th>عدد المرفقات</th>
+                <th>التاريخ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for evidence in recent_evidences %}
+              <tr>
+                <td>{{ evidence.cycle.name }}</td>
+                <td>{{ evidence.criterion.name }}</td>
+                <td>{{ evidence.evidence_text|truncatechars:90 }}</td>
+                <td>{{ evidence.attachments.count }}</td>
+                <td>{{ evidence.created_at }}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="5" class="text-muted">لا توجد شواهد مرفوعة بعد.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endif %}
 {% endif %}
 
 {% if manager_dashboard %}
-  {{ manager_dashboard.performance_labels|json_script:"teacher-level-labels" }}
-  {{ manager_dashboard.performance_values|json_script:"teacher-level-values" }}
-  {{ manager_dashboard.top_chart_labels|json_script:"top-teachers-labels" }}
-  {{ manager_dashboard.top_chart_manager_values|json_script:"top-teachers-manager-values" }}
-  {{ manager_dashboard.top_chart_objective_values|json_script:"top-teachers-objective-values" }}
+{{ manager_dashboard.performance_labels|json_script:"teacher-level-labels" }}
+{{ manager_dashboard.performance_values|json_script:"teacher-level-values" }}
+{{ manager_dashboard.top_chart_labels|json_script:"top-teachers-labels" }}
+{{ manager_dashboard.top_chart_manager_values|json_script:"top-teachers-manager-values" }}
+{{ manager_dashboard.top_chart_objective_values|json_script:"top-teachers-objective-values" }}
 {% endif %}
 {% endblock %}
 
 {% block extra_scripts %}
-  {% if manager_dashboard %}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <script>
-      (function () {
-        const levelLabels = JSON.parse(document.getElementById("teacher-level-labels").textContent);
-        const levelValues = JSON.parse(document.getElementById("teacher-level-values").textContent);
-        const topLabels = JSON.parse(document.getElementById("top-teachers-labels").textContent);
-        const topManagerValues = JSON.parse(document.getElementById("top-teachers-manager-values").textContent);
-        const topObjectiveValues = JSON.parse(document.getElementById("top-teachers-objective-values").textContent);
+{% if manager_dashboard %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  (function () {
+    const levelLabels = JSON.parse(document.getElementById("teacher-level-labels").textContent);
+    const levelValues = JSON.parse(document.getElementById("teacher-level-values").textContent);
+    const topLabels = JSON.parse(document.getElementById("top-teachers-labels").textContent);
+    const topManagerValues = JSON.parse(document.getElementById("top-teachers-manager-values").textContent);
+    const topObjectiveValues = JSON.parse(document.getElementById("top-teachers-objective-values").textContent);
 
-        const levelCanvas = document.getElementById("teacherLevelChart");
-        if (levelCanvas) {
-          new Chart(levelCanvas, {
-            type: "doughnut",
-            data: {
-              labels: levelLabels,
-              datasets: [{
-                data: levelValues,
-                backgroundColor: ["#225473", "#378C8C", "#173040", "#D4FBFF", "#FFEDD4"]
-              }]
-            },
-            options: {
-              responsive: true,
-              plugins: {
-                legend: {
-                  position: "bottom",
-                  labels: { color: "#F2F2F0" }
-                }
-              }
+    const levelCanvas = document.getElementById("teacherLevelChart");
+    if (levelCanvas) {
+      new Chart(levelCanvas, {
+        type: "doughnut",
+        data: {
+          labels: levelLabels,
+          datasets: [{
+            data: levelValues,
+            backgroundColor: ["#225473", "#378C8C", "#173040", "#D4FBFF", "#FFEDD4"]
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: { color: "#F2F2F0" }
             }
-          });
+          }
         }
+      });
+    }
 
-        const topCanvas = document.getElementById("topTeachersChart");
-        if (topCanvas) {
-          new Chart(topCanvas, {
-            type: "bar",
-            data: {
-              labels: topLabels,
-              datasets: [
-                {
-                  label: "درجة المدير",
-                  data: topManagerValues,
-                  backgroundColor: "#378C8C",
-                  borderRadius: 8
-                },
-                {
-                  label: "الدرجة الموضوعية الجزئية",
-                  data: topObjectiveValues,
-                  backgroundColor: "#D4FBFF",
-                  borderColor: "#173040",
-                  borderWidth: 1,
-                  borderRadius: 8
-                }
-              ]
+    const topCanvas = document.getElementById("topTeachersChart");
+    if (topCanvas) {
+      new Chart(topCanvas, {
+        type: "bar",
+        data: {
+          labels: topLabels,
+          datasets: [
+            {
+              label: "درجة المدير",
+              data: topManagerValues,
+              backgroundColor: "#378C8C",
+              borderRadius: 8
             },
-            options: {
-              responsive: true,
-              plugins: {
-                legend: {
-                  labels: { color: "#F2F2F0" }
-                }
-              },
-              scales: {
-                x: {
-                  ticks: { color: "#F2F2F0" },
-                  grid: { color: "rgba(242, 242, 240, 0.08)" }
-                },
-                y: {
-                  ticks: { color: "#F2F2F0" },
-                  grid: { color: "rgba(242, 242, 240, 0.16)" },
-                  beginAtZero: true,
-                  max: 100
-                }
-              }
+            {
+              label: "توقع AI",
+              data: topObjectiveValues,
+              backgroundColor: "#D4FBFF",
+              borderColor: "#173040",
+              borderWidth: 1,
+              borderRadius: 8
             }
-          });
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              labels: { color: "#F2F2F0" }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: "#F2F2F0" },
+              grid: { color: "rgba(242, 242, 240, 0.08)" }
+            },
+            y: {
+              ticks: { color: "#F2F2F0" },
+              grid: { color: "rgba(242, 242, 240, 0.16)" },
+              beginAtZero: true,
+              max: 100
+            }
+          }
         }
-      })();
-    </script>
-  {% endif %}
+      });
+    }
+  })();
+</script>
+{% endif %}
 {% endblock %}

@@ -38,7 +38,7 @@ class TeacherMetricSnapshotViewSetTests(TestCase):
                 "teacher": self.teacher.id,
                 "cycle": self.cycle.id,
                 "pd_hours": "14.50",
-                "plans_count": 6,
+                "training_hours": "6.00",
             },
         )
         force_authenticate(request, user=self.teacher_user)
@@ -57,7 +57,7 @@ class TeacherMetricSnapshotViewSetTests(TestCase):
                 "teacher": self.teacher.id,
                 "cycle": self.cycle.id,
                 "pd_hours": "12.00",
-                "plans_count": 4,
+                "training_hours": "4.00",
             },
         )
         force_authenticate(request, user=self.leader_user)
@@ -69,7 +69,7 @@ class TeacherMetricSnapshotViewSetTests(TestCase):
             teacher=self.teacher,
             cycle=self.cycle,
             pd_hours="10.00",
-            plans_count=3,
+            training_hours="3.00",
             created_by=self.teacher_user,
             approval_status=TeacherMetricSnapshot.ApprovalStatus.PENDING,
         )
@@ -88,7 +88,7 @@ class TeacherMetricSnapshotViewSetTests(TestCase):
             teacher=self.teacher,
             cycle=self.cycle,
             pd_hours="10.00",
-            plans_count=3,
+            training_hours="3.00",
             created_by=self.teacher_user,
             approval_status=TeacherMetricSnapshot.ApprovalStatus.PENDING,
         )

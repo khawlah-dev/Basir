@@ -28,11 +28,11 @@ class ObjectiveScoringTests(TestCase):
             is_active=True,
             normalization_method="CAPPED_LINEAR_V1",
             pd_weight=Decimal("0.45"),
-            plans_weight=Decimal("0.55"),
+            training_weight=Decimal("0.55"),
             pd_target_hours=Decimal("20"),
             pd_max_hours=Decimal("40"),
-            plans_target_count=100,
-            plans_max_count=150,
+            training_target_hours=Decimal("100"),
+            training_max_hours=Decimal("150"),
             effective_from=date(2025, 1, 1),
         )
 
@@ -47,7 +47,7 @@ class ObjectiveScoringTests(TestCase):
             teacher=self.teacher,
             cycle=self.cycle,
             pd_hours=Decimal("20"),
-            plans_count=100,
+            training_hours=Decimal("100"),
             created_by=self.user,
         )
         result = compute_objective_score(teacher=self.teacher, cycle=self.cycle, policy=self.policy, actor=self.user)

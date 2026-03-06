@@ -34,12 +34,12 @@ class MultipleFileField(forms.FileField):
 class MetricSnapshotForm(forms.ModelForm):
     class Meta:
         model = TeacherMetricSnapshot
-        fields = ["teacher", "cycle", "pd_hours", "plans_count"]
+        fields = ["teacher", "cycle", "pd_hours", "training_hours"]
         labels = {
             "teacher": "المعلم",
             "cycle": "الفصل الدراسي",
             "pd_hours": "ساعات التطوير المهني",
-            "plans_count": "عدد التحضيرات/الخطط",
+            "training_hours": "ساعات التدريب",
         }
 
     def __init__(self, *args, **kwargs):

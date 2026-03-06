@@ -31,4 +31,5 @@ urlpatterns = [
     path("teachers/manage/", views.teachers_manage_page, name="teachers-manage"),
     path("semesters/manage/", views.semesters_manage_page, name="semesters-manage"),
     path("cases/<int:case_id>/close/", views.case_close_page, name="case-close"),
+    path("profile/", views.profile_page, name="profile"),
 ]

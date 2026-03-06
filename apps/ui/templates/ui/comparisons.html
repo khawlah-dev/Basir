@@ -1,12 +1,12 @@
 {% extends "ui/base.html" %}
 {% block title %}المقارنات{% endblock %}
 {% block content %}
-<h2 class="mb-3">مقارنة درجة المدير مع الدرجة الموضوعية الجزئية</h2>
+<h2 class="mb-3">مقارنة درجة المدير مع توقع AI</h2>
 <div class="card">
   <div class="card-body">
     <div class="table-responsive">
       <table class="table table-sm align-middle">
-        <thead><tr><th>المعلم</th><th>الدورة</th><th>درجة المدير</th><th>الدرجة الموضوعية (جزئية)</th><th>الانحراف</th><th>التصنيف</th><th>آخر تحديث</th></tr></thead>
+        <thead><tr><th>المعلم</th><th>الدورة</th><th>درجة المدير</th><th>توقع AI</th><th>الانحراف</th><th>التصنيف</th><th>آخر تحديث</th></tr></thead>
         <tbody>
         {% for c in comparisons %}
           <tr>
